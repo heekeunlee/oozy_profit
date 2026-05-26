@@ -38,8 +38,8 @@ export const financialData: MonthlyData[] = [
 ];
 
 export const getMonthName = (monthStr: string) => {
-  const [, month] = monthStr.split("-");
-  return `${parseInt(month, 10)}월`;
+  const [year, month] = monthStr.split("-");
+  return `${year.slice(2)}.${parseInt(month, 10)}`;
 };
 
 export const formatCurrency = (amount: number) => {
