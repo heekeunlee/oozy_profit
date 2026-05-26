@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { financialData, formatCurrency, formatCompact, getMonthName } from './data';
 import { ChevronRight, X, CreditCard, Coffee } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 
 type TimeRange = 'monthly' | '6months' | '1year';
 
@@ -76,7 +76,7 @@ function App() {
       <div className="fixed inset-0 bg-[#F2F2F7] flex flex-col items-center justify-center z-[100] animate-out fade-out duration-500 delay-2500 fill-mode-forwards">
         <div className="animate-in zoom-in duration-500 flex flex-col items-center">
           <div className="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mb-6">
-            <Coffee size={48} className="text-[#34C759]" strokeWidth={2.5} />
+            <Coffee size={48} className="text-[#007AFF]" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">우지 밸런스</h1>
           <p className="text-[#8E8E93] mt-2 font-medium">스마트한 손익 관리의 시작</p>
@@ -86,7 +86,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] text-[#1C1C1E] font-sans selection:bg-[#34C759] selection:text-white pb-20 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-[#F2F2F7] text-[#1C1C1E] font-sans selection:bg-[#007AFF] selection:text-white pb-20 animate-in fade-in duration-500">
       {/* Header */}
       <header className="pt-12 pb-6 px-6 sticky top-0 bg-[#F2F2F7]/80 backdrop-blur-xl z-20 border-b border-[#E5E5EA]">
         <h1 className="text-3xl font-semibold tracking-tight text-[#1C1C1E] mb-6 flex items-center gap-2">
@@ -141,7 +141,7 @@ function App() {
         <section className="bg-white rounded-[32px] p-8 shadow-sm border border-[#E5E5EA]/50">
           <p className="text-[#8E8E93] text-[15px] font-medium mb-1">{currentData.title}</p>
           <h2 className="text-[40px] leading-tight font-bold tracking-tight mb-8">
-            <span className={currentData.title.includes('.3') ? 'text-[#007AFF]' : 'text-[#34C759]'}>{formatCurrency(currentData.profit)}</span>
+            <span className="text-[#007AFF]">{formatCurrency(currentData.profit)}</span>
             <span className="block text-[#8E8E93] text-xl font-medium mt-1">순이익</span>
           </h2>
 
@@ -158,7 +158,7 @@ function App() {
                 style={{ width: `${expenseRatio}%` }}
               />
               <div 
-                className={`h-full transition-all duration-1000 ease-out ${currentData.title.includes('.3') ? 'bg-[#007AFF]' : 'bg-[#34C759]'}`}
+                className="h-full bg-[#007AFF] transition-all duration-1000 ease-out"
                 style={{ width: `${profitRatio}%` }}
               />
             </div>
@@ -171,7 +171,7 @@ function App() {
                 <span className="text-[#8E8E93] text-xs">({expenseRatio.toFixed(1)}%)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className={`w-2.5 h-2.5 rounded-full ${currentData.title.includes('.3') ? 'bg-[#007AFF]' : 'bg-[#34C759]'}`}></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#007AFF]"></div>
                 <span className="text-[#8E8E93]">수익</span>
                 <span className="font-medium text-[#1C1C1E]">{formatCompact(currentData.profit)}</span>
                 <span className="text-[#8E8E93] text-xs">({profitRatio.toFixed(1)}%)</span>
@@ -217,11 +217,7 @@ function App() {
                     itemStyle={{ color: '#1C1C1E', fontWeight: 600 }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '10px', fontWeight: 500 }} />
-                  <Bar dataKey="순이익" radius={[4, 4, 0, 0]} maxBarSize={16}>
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.name.endsWith('.3') ? '#007AFF' : '#34C759'} />
-                    ))}
-                  </Bar>
+                  <Bar dataKey="순이익" fill="#007AFF" radius={[4, 4, 0, 0]} maxBarSize={16} />
                   <Bar dataKey="지출" fill="#FF3B30" radius={[4, 4, 0, 0]} maxBarSize={16} />
                 </BarChart>
               </ResponsiveContainer>
