@@ -167,13 +167,13 @@ function App() {
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
                 <Bar dataKey="매출" fill="#3182F6" radius={[4, 4, 0, 0]} maxBarSize={20}>
-                  <LabelList dataKey="매출" position="top" fontSize={9} fill="#3182F6" formatter={(v: number) => Math.round(v)} />
+                  <LabelList dataKey="매출" position="top" fontSize={9} fill="#3182F6" formatter={(v: any) => Math.round(Number(v))} />
                 </Bar>
                 <Bar dataKey="지출" fill="#F04452" radius={[4, 4, 0, 0]} maxBarSize={20}>
-                  <LabelList dataKey="지출" position="top" fontSize={9} fill="#F04452" formatter={(v: number) => Math.round(v)} />
+                  <LabelList dataKey="지출" position="top" fontSize={9} fill="#F04452" formatter={(v: any) => Math.round(Number(v))} />
                 </Bar>
                 <Bar dataKey="순이익" fill="#00C471" radius={[4, 4, 0, 0]} maxBarSize={20}>
-                  <LabelList dataKey="순이익" position="top" fontSize={9} fill="#00C471" formatter={(v: number) => Math.round(v)} />
+                  <LabelList dataKey="순이익" position="top" fontSize={9} fill="#00C471" formatter={(v: any) => Math.round(Number(v))} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
