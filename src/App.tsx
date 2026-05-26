@@ -1,242 +1,255 @@
-import React, { useState } from 'react';
-import { financialData, formatCurrency, getMonthName } from './data';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LabelList } from 'recharts';
-import { TrendingUp, TrendingDown, Coffee, ChevronRight, DollarSign, PieChart, Users, Home, Calendar, X } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { financialData, formatCurrency, formatCompact, getMonthName } from './data';
+import { ChevronRight, X, CreditCard } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+
+type TimeRange = 'monthly' | '6months' | '1year';
 
 function App() {
+  const [timeRange, setTimeRange] = useState<TimeRange>('monthly');
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(financialData.length - 1);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const currentData = financialData[selectedMonthIndex];
-  
-  const totalExpenses = currentData.expenses.material + currentData.expenses.labor + currentData.expenses.rent + currentData.expenses.others;
-  const netProfit = currentData.sales - totalExpenses;
-  
-  const profitIncrease = selectedMonthIndex > 0 
-    ? netProfit - (financialData[selectedMonthIndex - 1].sales - (financialData[selectedMonthIndex - 1].expenses.material + financialData[selectedMonthIndex - 1].expenses.labor + financialData[selectedMonthIndex - 1].expenses.rent + financialData[selectedMonthIndex - 1].expenses.others))
-    : 0;
 
-  const year2026Data = financialData.filter(d => d.month.startsWith('2026'));
-  const total2026Sales = year2026Data.reduce((acc, curr) => acc + curr.sales, 0);
-  const total2026Expenses = year2026Data.reduce((acc, curr) => acc + curr.expenses.material + curr.expenses.labor + curr.expenses.rent + curr.expenses.others, 0);
-  const total2026Profit = total2026Sales - total2026Expenses;
+  // Data processing based on selected range
+  const currentData = useMemo(() => {
+    if (timeRange === 'monthly') {
+      const d = financialData[selectedMonthIndex];
+      const expenses = d.expenses.material + d.expenses.labor + d.expenses.rent + d.expenses.others;
+      return {
+        title: `${getMonthName(d.month)} 현황`,
+        sales: d.sales,
+        expenses,
+        profit: d.sales - expenses,
+        details: d.expenses.details
+      };
+    } else if (timeRange === '6months') {
+      const data = financialData.slice(Math.max(financialData.length - 6, 0));
+      const sales = data.reduce((sum, d) => sum + d.sales, 0);
+      const expenses = data.reduce((sum, d) => sum + d.expenses.material + d.expenses.labor + d.expenses.rent + d.expenses.others, 0);
+      return {
+        title: '최근 6개월 누적',
+        sales,
+        expenses,
+        profit: sales - expenses,
+        details: null
+      };
+    } else {
+      const sales = financialData.reduce((sum, d) => sum + d.sales, 0);
+      const expenses = financialData.reduce((sum, d) => sum + d.expenses.material + d.expenses.labor + d.expenses.rent + d.expenses.others, 0);
+      return {
+        title: '2026년 전체 누적',
+        sales,
+        expenses,
+        profit: sales - expenses,
+        details: null
+      };
+    }
+  }, [timeRange, selectedMonthIndex]);
 
-  const chartData = financialData.map(d => {
-    const expenses = d.expenses.material + d.expenses.labor + d.expenses.rent + d.expenses.others;
-    return {
-      name: getMonthName(d.month),
-      매출: d.sales / 10000,
-      지출: expenses / 10000,
-      순이익: (d.sales - expenses) / 10000,
-    };
-  });
+  const expenseRatio = (currentData.expenses / currentData.sales) * 100;
+  const profitRatio = (currentData.profit / currentData.sales) * 100;
+
+  // Chart data for 6 months or 1 year
+  const chartData = useMemo(() => {
+    const dataSlice = timeRange === '1year' ? financialData : financialData.slice(Math.max(financialData.length - 6, 0));
+    return dataSlice.map(d => {
+      const exp = d.expenses.material + d.expenses.labor + d.expenses.rent + d.expenses.others;
+      return {
+        name: getMonthName(d.month),
+        매출: d.sales / 10000,
+        지출: exp / 10000,
+        순이익: (d.sales - exp) / 10000,
+      };
+    });
+  }, [timeRange]);
 
   return (
-    <div className="min-h-screen bg-[#F2F4F6] text-[#333D4B] font-sans pb-20">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#34C759] selection:text-black pb-20">
       {/* Header */}
-      <header className="sticky top-0 bg-[#F2F4F6]/80 backdrop-blur-md z-10 px-5 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <Coffee className="text-blue-500" />
-          2026년 우지커피 매출장
+      <header className="pt-12 pb-6 px-6 sticky top-0 bg-black/80 backdrop-blur-xl z-20 border-b border-[#2C2C2E]">
+        <h1 className="text-3xl font-semibold tracking-tight text-white mb-6">
+          우지커피
         </h1>
-        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-          <img src="https://api.dicebear.com/7.x/notionists/svg?seed=oozy" alt="profile" />
+        
+        {/* Segmented Control */}
+        <div className="flex bg-[#1C1C1E] p-1 rounded-xl">
+          <button 
+            onClick={() => setTimeRange('monthly')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${timeRange === 'monthly' ? 'bg-[#3A3A3C] text-white shadow-sm' : 'text-gray-400'}`}
+          >
+            월별
+          </button>
+          <button 
+            onClick={() => setTimeRange('6months')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${timeRange === '6months' ? 'bg-[#3A3A3C] text-white shadow-sm' : 'text-gray-400'}`}
+          >
+            최근 6개월
+          </button>
+          <button 
+            onClick={() => setTimeRange('1year')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${timeRange === '1year' ? 'bg-[#3A3A3C] text-white shadow-sm' : 'text-gray-400'}`}
+          >
+            1년 (26년)
+          </button>
         </div>
       </header>
 
-      <main className="px-5 space-y-4 max-w-lg mx-auto">
-        {/* Month Selector */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {financialData.map((d, idx) => (
-            <button
-              key={d.month}
-              onClick={() => setSelectedMonthIndex(idx)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full font-medium transition-colors ${
-                idx === selectedMonthIndex 
-                  ? 'bg-blue-500 text-white shadow-md' 
-                  : 'bg-white text-gray-500 hover:bg-gray-100'
-              }`}
-            >
-              {getMonthName(d.month)}
-            </button>
-          ))}
-        </div>
+      <main className="px-6 mt-6 max-w-lg mx-auto space-y-8">
+        
+        {/* Monthly Selector */}
+        {timeRange === 'monthly' && (
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+            {financialData.map((d, idx) => (
+              <button
+                key={d.month}
+                onClick={() => setSelectedMonthIndex(idx)}
+                className={`snap-center whitespace-nowrap px-5 py-2.5 rounded-full text-[15px] font-medium transition-all duration-300 ${
+                  idx === selectedMonthIndex 
+                    ? 'bg-white text-black' 
+                    : 'bg-[#1C1C1E] text-gray-400 hover:bg-[#2C2C2E]'
+                }`}
+              >
+                {getMonthName(d.month)}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Cumulative Year Card */}
-        <section className="bg-white rounded-[24px] p-6 shadow-sm mb-2 mt-4">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <Calendar size={20} className="text-blue-500" /> 
-            2026년 누적 현황
+        {/* Main Dashboard Card */}
+        <section>
+          <p className="text-[#8E8E93] text-[15px] font-medium mb-1">{currentData.title}</p>
+          <h2 className="text-[40px] leading-tight font-bold tracking-tight mb-8">
+            <span className="text-[#34C759]">{formatCurrency(currentData.profit)}</span>
+            <span className="block text-[#8E8E93] text-xl font-medium mt-1">순이익</span>
           </h2>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="text-gray-500 font-medium">총 매출</p>
-              <p className="text-2xl font-extrabold text-[#3182F6]">{formatCurrency(total2026Sales)}</p>
+
+          {/* Visual Profit/Expense Bar */}
+          <div className="mb-6">
+            <div className="flex justify-between text-sm font-medium mb-2">
+              <span className="text-white">총 매출 {formatCompact(currentData.sales)}</span>
+              <span className="text-[#8E8E93]">100%</span>
             </div>
-            <div className="flex justify-between items-center">
-              <p className="text-gray-500 font-medium">총 지출</p>
-              <p className="text-2xl font-extrabold text-[#F04452]">{formatCurrency(total2026Expenses)}</p>
+            
+            <div className="h-4 bg-[#1C1C1E] rounded-full overflow-hidden flex w-full">
+              <div 
+                className="h-full bg-[#FF3B30] transition-all duration-1000 ease-out relative"
+                style={{ width: `${expenseRatio}%` }}
+              />
+              <div 
+                className="h-full bg-[#34C759] transition-all duration-1000 ease-out"
+                style={{ width: `${profitRatio}%` }}
+              />
             </div>
-            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-              <p className="text-gray-500 font-bold">순이익</p>
-              <p className="text-2xl font-extrabold text-[#00C471]">{formatCurrency(total2026Profit)}</p>
+            
+            <div className="flex justify-between mt-3 text-sm">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-[#FF3B30]"></div>
+                <span className="text-[#8E8E93]">경비</span>
+                <span className="font-medium text-white">{formatCompact(currentData.expenses)}</span>
+                <span className="text-[#8E8E93] text-xs">({expenseRatio.toFixed(1)}%)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-[#34C759]"></div>
+                <span className="text-[#8E8E93]">수익</span>
+                <span className="font-medium text-white">{formatCompact(currentData.profit)}</span>
+                <span className="text-[#8E8E93] text-xs">({profitRatio.toFixed(1)}%)</span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Hero Card for Selected Month */}
-        <section className="bg-white rounded-[24px] p-6 shadow-sm mb-4">
-          <div className="flex justify-between items-center mb-4">
-             <h2 className="text-lg font-bold">{getMonthName(currentData.month)} 현황</h2>
-             {profitIncrease !== 0 && (
-                <div className={`flex items-center gap-1 text-sm font-medium ${profitIncrease > 0 ? 'text-red-500' : 'text-blue-500'}`}>
-                  {profitIncrease > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  전월 대비 {formatCurrency(Math.abs(profitIncrease))} {profitIncrease > 0 ? '증가' : '감소'}
-                </div>
-              )}
-          </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="text-gray-500 font-medium">총 매출</p>
-              <p className="text-2xl font-extrabold text-[#3182F6]">{formatCurrency(currentData.sales)}</p>
+        {/* Action Button for Details (Only in monthly mode) */}
+        {timeRange === 'monthly' && currentData.details && (
+          <button 
+            onClick={() => setIsDetailsOpen(true)}
+            className="w-full bg-[#1C1C1E] hover:bg-[#2C2C2E] transition-colors rounded-2xl p-4 flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#FF3B30]/20 flex items-center justify-center">
+                <CreditCard size={20} className="text-[#FF3B30]" />
+              </div>
+              <div className="text-left">
+                <p className="text-white font-medium">지출 상세 내역 보기</p>
+                <p className="text-[#8E8E93] text-sm">{formatCurrency(currentData.expenses)}</p>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <p className="text-gray-500 font-medium">총 지출</p>
-              <p className="text-2xl font-extrabold text-[#F04452]">{formatCurrency(totalExpenses)}</p>
+            <ChevronRight className="text-[#8E8E93] group-hover:text-white transition-colors" />
+          </button>
+        )}
+
+        {/* Chart Section */}
+        {timeRange !== 'monthly' && (
+          <section className="bg-[#1C1C1E] rounded-3xl p-6">
+            <h3 className="text-lg font-semibold mb-6">수익 추이 (단위: 만원)</h3>
+            <div className="h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2C2C2E" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8E8E93' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8E8E93' }} />
+                  <Tooltip 
+                    cursor={{ fill: '#2C2C2E' }}
+                    contentStyle={{ backgroundColor: '#1C1C1E', borderRadius: '12px', border: '1px solid #3A3A3C', color: '#fff' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Bar dataKey="순이익" fill="#34C759" radius={[4, 4, 0, 0]} maxBarSize={16} />
+                  <Bar dataKey="지출" fill="#FF3B30" radius={[4, 4, 0, 0]} maxBarSize={16} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-              <p className="text-gray-500 font-bold">순이익</p>
-              <p className="text-2xl font-extrabold text-[#00C471]">{formatCurrency(netProfit)}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Expense Breakdown */}
-        <section className="bg-white rounded-[24px] p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-5">
-            <h3 className="text-lg font-bold">지출 상세</h3>
-            <button 
-              onClick={() => setIsDetailsOpen(true)}
-              className="text-sm text-gray-400 flex items-center hover:text-gray-600 transition-colors"
-            >
-              자세히 <ChevronRight size={16} />
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <ExpenseItem 
-              icon={<Coffee size={20} className="text-amber-600" />}
-              iconBg="bg-amber-100"
-              title="재료비" 
-              amount={currentData.expenses.material} 
-              total={totalExpenses} 
-            />
-            <ExpenseItem 
-              icon={<Users size={20} className="text-blue-600" />}
-              iconBg="bg-blue-100"
-              title="인건비" 
-              amount={currentData.expenses.labor} 
-              total={totalExpenses} 
-            />
-            <ExpenseItem 
-              icon={<Home size={20} className="text-emerald-600" />}
-              iconBg="bg-emerald-100"
-              title="임대료" 
-              amount={currentData.expenses.rent} 
-              total={totalExpenses} 
-            />
-            <ExpenseItem 
-              icon={<DollarSign size={20} className="text-purple-600" />}
-              iconBg="bg-purple-100"
-              title="기타 경비" 
-              amount={currentData.expenses.others} 
-              total={totalExpenses} 
-              subtitle="관리비, 기장료, 로열티 등"
-            />
-          </div>
-        </section>
-
-        {/* Trend Chart */}
-        <section className="bg-white rounded-[24px] p-6 shadow-sm">
-          <h3 className="text-lg font-bold mb-5">최근 6개월 추이</h3>
-          <p className="text-xs text-gray-400 mb-4">(단위: 만원)</p>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F2F4F6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8B95A1' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#8B95A1' }} />
-                <Tooltip 
-                  cursor={{ stroke: '#F2F4F6', strokeWidth: 2 }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
-                <Line type="monotone" dataKey="매출" stroke="#3182F6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }}>
-                  <LabelList dataKey="매출" position="top" fontSize={10} fill="#3182F6" formatter={(v: any) => Math.round(Number(v))} offset={10} />
-                </Line>
-                <Line type="monotone" dataKey="지출" stroke="#F04452" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }}>
-                  <LabelList dataKey="지출" position="bottom" fontSize={10} fill="#F04452" formatter={(v: any) => Math.round(Number(v))} offset={10} />
-                </Line>
-                <Line type="monotone" dataKey="순이익" stroke="#00C471" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }}>
-                  <LabelList dataKey="순이익" position="top" fontSize={10} fill="#00C471" formatter={(v: any) => Math.round(Number(v))} offset={10} />
-                </Line>
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        {/* Insight Card */}
-        <section className="bg-blue-50 rounded-[24px] p-5 shadow-sm flex gap-4 items-start">
-          <div className="bg-blue-500 rounded-full p-2 text-white shrink-0 mt-1">
-            <PieChart size={20} />
-          </div>
-          <div>
-            <h4 className="font-bold text-blue-900 mb-1">사장님을 위한 리포트</h4>
-            <p className="text-sm text-blue-800/80 leading-relaxed">
-              이번 달 재료비 비중이 전체 지출의 {((currentData.expenses.material / totalExpenses) * 100).toFixed(0)}%를 차지하고 있어요. 
-              {((currentData.expenses.material / totalExpenses) * 100) > 40 ? ' 재료비 비중이 다소 높은 편이니 로스율을 점검해보세요!' : ' 적절한 수준으로 잘 유지되고 있습니다.'}
-            </p>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
 
       {/* Details Modal */}
-      {isDetailsOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[24px] w-full max-w-md p-6 max-h-[85vh] overflow-y-auto shadow-xl">
-            <div className="flex justify-between items-center mb-5 sticky top-0 bg-white z-10 pt-2 pb-4 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-800">{getMonthName(currentData.month)} 지출 상세 현황표</h3>
-              <button onClick={() => setIsDetailsOpen(false)} className="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full p-2">
-                <X size={18} />
+      {isDetailsOpen && currentData.details && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4 animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+            onClick={() => setIsDetailsOpen(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-[#1C1C1E] w-full sm:max-w-md rounded-t-[32px] sm:rounded-[32px] p-6 max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex justify-center mb-4 sm:hidden">
+              <div className="w-12 h-1.5 bg-[#3A3A3C] rounded-full" />
+            </div>
+            
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white">{getMonthName(financialData[selectedMonthIndex].month)} 세부 경비</h3>
+              <button 
+                onClick={() => setIsDetailsOpen(false)} 
+                className="text-[#8E8E93] hover:text-white bg-[#2C2C2E] rounded-full p-2 transition-colors"
+              >
+                <X size={20} />
               </button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-gray-100">
-              <table className="w-full text-[15px]">
-                <thead className="bg-[#F2F4F6]">
-                  <tr>
-                    <th className="py-3 px-4 text-left font-bold text-gray-600">경비 항목</th>
-                    <th className="py-3 px-4 text-right font-bold text-gray-600">금액</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  <tr><td className="py-3 px-4 text-gray-700">재료비상반</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.materialFirst)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">재료비후반</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.materialSecond)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">인건비</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.labor)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">임대료</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.rent)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">관리비</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.admin)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">기장료</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.accounting)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">로열티</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.royalty)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">홍보비(배너 등)</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.promotion)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">cctv,전화</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.cctv)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">브랜드라디오</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.radio)}</td></tr>
-                  <tr><td className="py-3 px-4 text-gray-700">화재보험</td><td className="py-3 px-4 text-right font-medium text-gray-900">{formatCurrency(currentData.expenses.details.insurance)}</td></tr>
-                </tbody>
-                <tfoot className="bg-[#FFF5F5] border-t-2 border-red-100">
-                  <tr>
-                    <td className="py-4 px-4 font-bold text-gray-800">경비 합계</td>
-                    <td className="py-4 px-4 text-right font-extrabold text-[#F04452] text-lg">{formatCurrency(totalExpenses)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            
+            <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+              <div className="space-y-1 pb-6">
+                <DetailRow label="재료비상반" amount={currentData.details.materialFirst} />
+                <DetailRow label="재료비후반" amount={currentData.details.materialSecond} />
+                <div className="h-px w-full bg-[#2C2C2E] my-2" />
+                <DetailRow label="인건비" amount={currentData.details.labor} />
+                <DetailRow label="임대료" amount={currentData.details.rent} />
+                <div className="h-px w-full bg-[#2C2C2E] my-2" />
+                <DetailRow label="관리비" amount={currentData.details.admin} />
+                <DetailRow label="기장료" amount={currentData.details.accounting} />
+                <DetailRow label="로열티" amount={currentData.details.royalty} />
+                <DetailRow label="홍보비(배너 등)" amount={currentData.details.promotion} />
+                <DetailRow label="cctv,전화" amount={currentData.details.cctv} />
+                <DetailRow label="브랜드라디오" amount={currentData.details.radio} />
+                <DetailRow label="화재보험" amount={currentData.details.insurance} />
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-[#2C2C2E] mt-auto">
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-white">경비 합계</span>
+                <span className="font-bold text-xl text-[#FF3B30]">{formatCurrency(currentData.expenses)}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -245,29 +258,12 @@ function App() {
   );
 }
 
-function ExpenseItem({ icon, iconBg, title, subtitle, amount, total }: { icon: React.ReactNode, iconBg: string, title: string, subtitle?: string, amount: number, total: number }) {
-  const percentage = Math.round((amount / total) * 100);
-  
+function DetailRow({ label, amount }: { label: string, amount: number }) {
+  if (amount === 0) return null;
   return (
-    <div className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${iconBg}`}>
-        {icon}
-      </div>
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-1">
-          <p className="font-semibold text-[15px]">{title}</p>
-          <p className="font-bold">{formatCurrency(amount)}</p>
-        </div>
-        <div className="flex justify-between items-center">
-          <p className="text-xs text-gray-400">{subtitle || `${percentage}%`}</p>
-          <div className="w-1/2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gray-300 rounded-full" 
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-        </div>
-      </div>
+    <div className="flex justify-between items-center py-2.5">
+      <span className="text-[#8E8E93] font-medium">{label}</span>
+      <span className="text-white font-medium">{formatCurrency(amount)}</span>
     </div>
   );
 }
