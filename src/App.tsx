@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { financialData, formatCurrency, getMonthName } from './data';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, Coffee, ChevronRight, DollarSign, PieChart, Users, Home } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LabelList } from 'recharts';
+import { TrendingUp, TrendingDown, Coffee, ChevronRight, DollarSign, PieChart, Users, Home, Calendar } from 'lucide-react';
 
 function App() {
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(financialData.length - 1);
@@ -13,6 +13,11 @@ function App() {
   const profitIncrease = selectedMonthIndex > 0 
     ? netProfit - (financialData[selectedMonthIndex - 1].sales - Object.values(financialData[selectedMonthIndex - 1].expenses).reduce((a, b) => a + b, 0))
     : 0;
+
+  const year2026Data = financialData.filter(d => d.month.startsWith('2026'));
+  const total2026Sales = year2026Data.reduce((acc, curr) => acc + curr.sales, 0);
+  const total2026Expenses = year2026Data.reduce((acc, curr) => acc + Object.values(curr.expenses).reduce((a, b) => a + b, 0), 0);
+  const total2026Profit = total2026Sales - total2026Expenses;
 
   const chartData = financialData.map(d => {
     const expenses = Object.values(d.expenses).reduce((a, b) => a + b, 0);
@@ -30,7 +35,7 @@ function App() {
       <header className="sticky top-0 bg-[#F2F4F6]/80 backdrop-blur-md z-10 px-5 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold flex items-center gap-2">
           <Coffee className="text-blue-500" />
-          우지커피 매출장
+          2026년 우지커피 매출장
         </h1>
         <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
           <img src="https://api.dicebear.com/7.x/notionists/svg?seed=oozy" alt="profile" />
@@ -55,32 +60,51 @@ function App() {
           ))}
         </div>
 
-        {/* Hero Card */}
-        <section className="bg-white rounded-[24px] p-6 shadow-sm">
-          <p className="text-[15px] font-medium text-gray-500 mb-1">
-            {getMonthName(currentData.month)} 순이익
-          </p>
-          <div className="flex items-end gap-2 mb-4">
-            <h2 className="text-3xl font-extrabold tracking-tight">
-              {formatCurrency(netProfit)}
-            </h2>
+        {/* Cumulative Year Card */}
+        <section className="bg-white rounded-[24px] p-6 shadow-sm mb-2 mt-4">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Calendar size={20} className="text-blue-500" /> 
+            2026년 누적 현황
+          </h2>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-gray-500 font-medium">총 매출</p>
+              <p className="text-2xl font-extrabold text-[#3182F6]">{formatCurrency(total2026Sales)}</p>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-gray-500 font-medium">총 지출</p>
+              <p className="text-2xl font-extrabold text-[#F04452]">{formatCurrency(total2026Expenses)}</p>
+            </div>
+            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+              <p className="text-gray-500 font-bold">순이익</p>
+              <p className="text-2xl font-extrabold text-[#00C471]">{formatCurrency(total2026Profit)}</p>
+            </div>
           </div>
-          
-          {profitIncrease !== 0 && (
-            <div className={`flex items-center gap-1 text-sm font-medium ${profitIncrease > 0 ? 'text-red-500' : 'text-blue-500'}`}>
-              {profitIncrease > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-              지난달보다 {formatCurrency(Math.abs(profitIncrease))} {profitIncrease > 0 ? '늘었어요' : '줄었어요'}
-            </div>
-          )}
+        </section>
 
-          <div className="mt-6 pt-5 border-t border-gray-100 flex justify-between">
-            <div>
-              <p className="text-xs text-gray-400 mb-1">총 매출</p>
-              <p className="font-semibold text-gray-700">{formatCurrency(currentData.sales)}</p>
+        {/* Hero Card for Selected Month */}
+        <section className="bg-white rounded-[24px] p-6 shadow-sm mb-4">
+          <div className="flex justify-between items-center mb-4">
+             <h2 className="text-lg font-bold">{getMonthName(currentData.month)} 현황</h2>
+             {profitIncrease !== 0 && (
+                <div className={`flex items-center gap-1 text-sm font-medium ${profitIncrease > 0 ? 'text-red-500' : 'text-blue-500'}`}>
+                  {profitIncrease > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  전월 대비 {formatCurrency(Math.abs(profitIncrease))} {profitIncrease > 0 ? '증가' : '감소'}
+                </div>
+              )}
+          </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-gray-500 font-medium">총 매출</p>
+              <p className="text-2xl font-extrabold text-[#3182F6]">{formatCurrency(currentData.sales)}</p>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400 mb-1">총 지출</p>
-              <p className="font-semibold text-gray-700">{formatCurrency(totalExpenses)}</p>
+            <div className="flex justify-between items-center">
+              <p className="text-gray-500 font-medium">총 지출</p>
+              <p className="text-2xl font-extrabold text-[#F04452]">{formatCurrency(totalExpenses)}</p>
+            </div>
+            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+              <p className="text-gray-500 font-bold">순이익</p>
+              <p className="text-2xl font-extrabold text-[#00C471]">{formatCurrency(netProfit)}</p>
             </div>
           </div>
         </section>
@@ -142,9 +166,15 @@ function App() {
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
-                <Bar dataKey="매출" fill="#E8F3FF" radius={[4, 4, 0, 0]} barSize={12} />
-                <Bar dataKey="지출" fill="#FFCCD5" radius={[4, 4, 0, 0]} barSize={12} />
-                <Bar dataKey="순이익" fill="#3182F6" radius={[4, 4, 0, 0]} barSize={12} />
+                <Bar dataKey="매출" fill="#3182F6" radius={[4, 4, 0, 0]} maxBarSize={20}>
+                  <LabelList dataKey="매출" position="top" fontSize={9} fill="#3182F6" formatter={(v: number) => Math.round(v)} />
+                </Bar>
+                <Bar dataKey="지출" fill="#F04452" radius={[4, 4, 0, 0]} maxBarSize={20}>
+                  <LabelList dataKey="지출" position="top" fontSize={9} fill="#F04452" formatter={(v: number) => Math.round(v)} />
+                </Bar>
+                <Bar dataKey="순이익" fill="#00C471" radius={[4, 4, 0, 0]} maxBarSize={20}>
+                  <LabelList dataKey="순이익" position="top" fontSize={9} fill="#00C471" formatter={(v: number) => Math.round(v)} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
