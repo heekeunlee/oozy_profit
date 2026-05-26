@@ -27,6 +27,6 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #3A3A3C;
+  background-color: #E5E5EA;
   border-radius: 10px;
 }
