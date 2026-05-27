@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { financialData, formatCurrency, formatCompact, getMonthName } from './data';
-import { ChevronRight, X, CreditCard, Coffee, Sparkles } from 'lucide-react';
+import { ChevronRight, X, CreditCard, Coffee, Sparkles, BrainCircuit } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell } from 'recharts';
 
 type TimeRange = 'monthly' | '6months' | '1year';
@@ -216,6 +216,41 @@ function App() {
             </div>
           </div>
         </section>
+
+        {/* AI Insight Card (Only for estimated months) */}
+        {timeRange === 'monthly' && currentData.isEstimate && (
+          <section className="bg-gradient-to-br from-[#F5F5F7] to-white rounded-[28px] p-6 shadow-sm border border-[#007AFF]/10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#007AFF]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+            <div className="flex items-center gap-2.5 mb-4 relative z-10">
+              <div className="w-8 h-8 rounded-full bg-[#007AFF]/10 flex items-center justify-center">
+                <BrainCircuit size={16} className="text-[#007AFF]" />
+              </div>
+              <h3 className="text-[17px] font-bold text-[#1D1D1F] tracking-tight">AI 시뮬레이션 리포트</h3>
+            </div>
+            
+            <div className="space-y-4 relative z-10">
+              <div className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-[#E5E5EA]/50">
+                <h4 className="text-[14px] font-bold text-[#1D1D1F] mb-1.5 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]"></span>
+                  매출 흐름 타당성
+                </h4>
+                <p className="text-[#86868B] text-[14px] leading-relaxed font-medium">
+                  여름(8월)과 가을(10월) 성수기의 카페 매출 사이클이 매우 현실적으로 반영된 훌륭한 예측치입니다.
+                </p>
+              </div>
+
+              <div className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-[#E5E5EA]/50">
+                <h4 className="text-[14px] font-bold text-[#1D1D1F] mb-1.5 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]"></span>
+                  주의 깊게 볼 점
+                </h4>
+                <p className="text-[#86868B] text-[14px] leading-relaxed font-medium">
+                  특히 8월의 예상 재료비 원가율이 약 <span className="text-[#FF3B30] font-bold">24%</span>로 상반기(29% 선) 대비 다소 낙관적입니다. 성수기 얼음, 시럽 등 부재료 로스(Loss)율 관리가 순이익 달성의 핵심이 될 것입니다.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Action Button for Details (Only in monthly mode) */}
         {timeRange === 'monthly' && currentData.details && (
