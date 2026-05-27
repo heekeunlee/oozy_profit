@@ -24,6 +24,52 @@ function App() {
     return monthNum > 5;
   };
 
+  const getAiInsight = (monthStr: string) => {
+    const monthNum = parseInt(monthStr.split('-')[1], 10);
+    switch (monthNum) {
+      case 6:
+        return {
+          flow: "여름의 시작으로 전월 대비 매출은 약간 안정세(2,600만)를 보이나, 본격 성수기를 앞둔 숨 고르기 기간으로 적절한 예측입니다.",
+          warning: "예상 재료비 원가율이 약 25%로, 5월(34%) 대비 급격히 낮게 세팅되었습니다. 빙수나 시그니처 아이스 메뉴들의 실제 원가와 부합하는지 꼼꼼한 확인이 필요합니다."
+        };
+      case 7:
+        return {
+          flow: "본격적인 무더위 진입과 장마철 배달 수요 증가로 6월 대비 매출 상승(2,750만)이 예상된 매우 현실적인 지표입니다.",
+          warning: "인건비가 575만 원으로 역대 최고치 부근으로 설정되어 있습니다. 성수기 알바생 충원에 대비하여, 바쁜 피크 타임 위주의 효율적인 스케줄 배치가 핵심입니다."
+        };
+      case 8:
+        return {
+          flow: "연중 최대 매출(3,200만) 피크입니다. 아이스 음료 수요가 극에 달하는 폭염 시즌이므로 예측된 매출 흐름이 매우 타당합니다.",
+          warning: "최고 매출임에도 재료비 원가율을 역대 최저인 24.2%로 극도로 낙관적으로 잡았습니다. 성수기 얼음, 컵, 시럽 등의 극심한 로스(Loss)를 반드시 막아야만 달성 가능한 수치입니다."
+        };
+      case 9:
+        return {
+          flow: "여름 휴가철 종료 및 선선해진 날씨로 인해 8월 대비 매출이 다소 하락(2,980만)하는 전형적인 카페 가을 초입 패턴이 반영되었습니다.",
+          warning: "매출은 줄었으나 재료비 원가율이 31%로 다시 상승하는 것으로 예측되었습니다. 여름 내내 사용하던 아이스 전용 부재료들의 꼼꼼한 재고 처리 및 관리가 순이익 방어의 키가 됩니다."
+        };
+      case 10:
+        return {
+          flow: "가을 나들이 및 따뜻한 라떼류 객단가 상승으로 하반기 2차 매출 피크(3,300만)를 달성하는 매우 훌륭한 시나리오입니다.",
+          warning: "재료비(1,048만)가 예측치 중 처음으로 1천만 원을 돌파합니다. 베이커리/디저트류와 따뜻한 음료의 원가 비중이 높아져 순이익을 갉아먹지 않도록 원가율 점검이 필요합니다."
+        };
+      case 11:
+        return {
+          flow: "10월의 가을 피크 이후 조금씩 안정세(3,150만)에 접어드는 무난하고 현실적인 초겨울 매출 흐름입니다.",
+          warning: "매출은 10월 대비 소폭 하락했으나, 인건비(584만)는 1년 중 최고치로 치솟았습니다. 줄어드는 매출 대비 인건비 고정 비용을 어떻게 방어할 것인지가 11월의 숙제입니다."
+        };
+      case 12:
+        return {
+          flow: "한겨울 추위 진입으로 홀(매장) 방문객 매출이 다소 감소(2,890만)하는 계절성이 아주 논리적으로 잘 반영되었습니다.",
+          warning: "연말 크리스마스 프로모션 등을 위해 재료비나 홍보비 지출이 실제로는 더 늘어날 수 있습니다. 내년을 준비하는 달인 만큼 공격적인 지출보다는 재고 정리에 집중하세요."
+        };
+      default:
+        return {
+          flow: "시뮬레이션된 매출 흐름이 기존 데이터 패턴 및 계절성과 부합하는지 정밀 검토가 필요합니다.",
+          warning: "매출 대비 재료비 및 인건비 비율이 적절하게 세팅되었는지 사장님의 꼼꼼한 점검이 순이익 달성의 핵심입니다."
+        };
+    }
+  };
+
   // Data processing based on selected range
   const currentData = useMemo(() => {
     if (timeRange === 'monthly') {
@@ -225,7 +271,7 @@ function App() {
               <div className="w-8 h-8 rounded-full bg-[#007AFF]/10 flex items-center justify-center">
                 <BrainCircuit size={16} className="text-[#007AFF]" />
               </div>
-              <h3 className="text-[17px] font-bold text-[#1D1D1F] tracking-tight">AI 시뮬레이션 리포트</h3>
+              <h3 className="text-[17px] font-bold text-[#1D1D1F] tracking-tight">AI 시뮬레이션 리포트 ({getMonthName(financialData[selectedMonthIndex].month)})</h3>
             </div>
             
             <div className="space-y-4 relative z-10">
@@ -235,7 +281,7 @@ function App() {
                   매출 흐름 타당성
                 </h4>
                 <p className="text-[#86868B] text-[14px] leading-relaxed font-medium">
-                  여름(8월)과 가을(10월) 성수기의 카페 매출 사이클이 매우 현실적으로 반영된 훌륭한 예측치입니다.
+                  {getAiInsight(financialData[selectedMonthIndex].month).flow}
                 </p>
               </div>
 
@@ -245,7 +291,7 @@ function App() {
                   주의 깊게 볼 점
                 </h4>
                 <p className="text-[#86868B] text-[14px] leading-relaxed font-medium">
-                  특히 8월의 예상 재료비 원가율이 약 <span className="text-[#FF3B30] font-bold">24%</span>로 상반기(29% 선) 대비 다소 낙관적입니다. 성수기 얼음, 시럽 등 부재료 로스(Loss)율 관리가 순이익 달성의 핵심이 될 것입니다.
+                  {getAiInsight(financialData[selectedMonthIndex].month).warning}
                 </p>
               </div>
             </div>
