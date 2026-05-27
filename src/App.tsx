@@ -117,7 +117,7 @@ function MonthlySection() {
 
   const isEstimate = (monthStr: string) => {
     const monthNum = parseInt(monthStr.split('-')[1], 10);
-    return monthNum > 5;
+    return monthNum > 4;
   };
 
   const currentData = useMemo(() => {
@@ -139,6 +139,11 @@ function MonthlySection() {
   const getAiInsight = (monthStr: string) => {
     const monthNum = parseInt(monthStr.split('-')[1], 10);
     switch (monthNum) {
+      case 5:
+        return {
+          flow: "가정의 달 특수 및 연휴 효과로 4월(2,950만) 대비 매출이 상승(3,100만)하는 매우 긍정적이고 현실적인 예측치입니다.",
+          warning: "예상 재료비 원가율이 약 34%로 연중 최고치를 기록합니다. 급증한 수요 대비 부재료 로스(Loss)가 없도록 철저한 발주 점검이 필요합니다."
+        };
       case 6:
         return {
           flow: "여름의 시작으로 전월 대비 매출은 약간 안정세(2,600만)를 보이나, 본격 성수기를 앞둔 숨 고르기 기간으로 적절한 예측입니다.",
