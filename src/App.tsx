@@ -40,8 +40,7 @@ export default function App() {
           <div className="w-24 h-24 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center justify-center mb-6">
             <Store size={48} className="text-[#007AFF]" />
           </div>
-          <h1 className="text-3xl font-bold text-[#1D1D1F] tracking-tight mb-2">우지커피 양수도 리포트</h1>
-          <p className="text-[#86868B] font-medium">프리미엄 상권의 압도적 수익률을 확인하세요</p>
+          <h1 className="text-3xl font-bold text-[#1D1D1F] tracking-tight">우지 밸런스</h1>
         </div>
       </div>
     );
