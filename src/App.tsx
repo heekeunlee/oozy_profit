@@ -535,27 +535,37 @@ function SimulatorSection({ avgSales }: { avgSales: number }) {
 // 4. Valuation Section
 // ----------------------------------------------------
 function ValuationSection({ avgProfit }: { avgProfit: number }) {
-  const basePremium = 50000000;
+  const basePremium = 70000000;
+  const franchiseSave = 25000000;
   const facilityVal = 70000000;
-  const opPremium = avgProfit * 18; // 18 months profit due to stability
-  const totalPremium = basePremium + facilityVal + opPremium;
+  // Calculate based on direct operation to maximize valuation
+  const opPremium = (avgProfit + 3000000) * 18; // 18 months of direct operation profit
+  const totalPremium = basePremium + franchiseSave + facilityVal + opPremium;
   
-  // ROI in months based on avg profit
-  const roiMonths = Math.ceil(totalPremium / avgProfit);
+  // ROI in months based on direct operation profit
+  const roiMonths = Math.ceil(totalPremium / (avgProfit + 3000000));
 
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       <section className="bg-white rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <h3 className="text-xl font-bold text-[#1D1D1F] mb-1 tracking-tight">권리금 타당성 분석</h3>
-        <p className="text-[#86868B] text-[13px] mb-6">압도적 안정성을 바탕으로 한 3억 원대 프리미엄 근거</p>
+        <p className="text-[#86868B] text-[13px] mb-6">최고 효율 4억 원대 프리미엄의 논리적 근거</p>
         
         <div className="space-y-4 mb-6">
           <div className="bg-[#F5F5F7] p-4 rounded-2xl flex items-center justify-between">
             <div>
-              <p className="font-bold text-[#1D1D1F] text-[15px]">바닥 권리금 (상권 가치 상승)</p>
-              <p className="text-[12px] text-[#86868B]">기존 3천만 원에서 독점 상권 프리미엄 반영</p>
+              <p className="font-bold text-[#1D1D1F] text-[15px]">바닥 권리금 (상권 가치)</p>
+              <p className="text-[12px] text-[#86868B]">메인 대로변 A급 독점 상권 프리미엄</p>
             </div>
             <span className="font-bold text-[#1D1D1F]">{formatCompact(basePremium)}원</span>
+          </div>
+
+          <div className="bg-[#F5F5F7] p-4 rounded-2xl flex items-center justify-between">
+            <div>
+              <p className="font-bold text-[#1D1D1F] text-[15px]">초기 프랜차이즈 매몰비용 방어</p>
+              <p className="text-[12px] text-[#86868B]">가맹비/교육비 등 신규 창업 소멸 비용 세이브</p>
+            </div>
+            <span className="font-bold text-[#1D1D1F]">{formatCompact(franchiseSave)}원</span>
           </div>
           
           <div className="bg-[#F5F5F7] p-4 rounded-2xl flex items-center justify-between">
@@ -569,7 +579,7 @@ function ValuationSection({ avgProfit }: { avgProfit: number }) {
           <div className="bg-[#F5F5F7] p-4 rounded-2xl flex items-center justify-between">
             <div>
               <p className="font-bold text-[#1D1D1F] text-[15px]">영업 권리금 (안정성 프리미엄)</p>
-              <p className="text-[12px] text-[#86868B]">월평균 순이익 × 18개월 (오토 매장 기준 최고 등급)</p>
+              <p className="text-[12px] text-[#86868B]">직접 운영 기준 최고 순이익 × 18개월</p>
             </div>
             <span className="font-bold text-[#007AFF]">{formatCompact(opPremium)}원</span>
           </div>
@@ -584,7 +594,7 @@ function ValuationSection({ avgProfit }: { avgProfit: number }) {
           <div className="bg-[#007AFF]/10 rounded-2xl p-4 border border-[#007AFF]/20">
             <p className="font-bold text-[#007AFF] mb-1 flex items-center gap-1.5"><CheckCircle2 size={16}/> 초기 투자금 초고속 회수</p>
             <p className="text-[13px] text-[#1D1D1F] font-medium leading-relaxed">
-              현재 평균 수익 기준, 인수 후 <strong>약 {roiMonths}개월</strong> 내에 초기 투자금(권리금)을 전액 회수할 수 있는 초우량 매장입니다.
+              직접 운영을 통한 극강의 마진율 확보 시, 인수 후 <strong>약 {roiMonths}개월</strong> 내에 초기 투자금(4억)을 전액 현금 회수할 수 있는 최상급 우량 매장입니다.
             </p>
           </div>
         </div>
