@@ -535,9 +535,9 @@ function SimulatorSection({ avgSales }: { avgSales: number }) {
 // 4. Valuation Section
 // ----------------------------------------------------
 function ValuationSection({ avgProfit }: { avgProfit: number }) {
-  const basePremium = 30000000;
+  const basePremium = 50000000;
   const facilityVal = 70000000;
-  const opPremium = avgProfit * 12; // 1 year profit
+  const opPremium = avgProfit * 18; // 18 months profit due to stability
   const totalPremium = basePremium + facilityVal + opPremium;
   
   // ROI in months based on avg profit
@@ -547,13 +547,13 @@ function ValuationSection({ avgProfit }: { avgProfit: number }) {
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       <section className="bg-white rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <h3 className="text-xl font-bold text-[#1D1D1F] mb-1 tracking-tight">권리금 타당성 분석</h3>
-        <p className="text-[#86868B] text-[13px] mb-6">합리적인 2억 원대 권리금의 명확한 근거</p>
+        <p className="text-[#86868B] text-[13px] mb-6">압도적 안정성을 바탕으로 한 3억 원대 프리미엄 근거</p>
         
         <div className="space-y-4 mb-6">
           <div className="bg-[#F5F5F7] p-4 rounded-2xl flex items-center justify-between">
             <div>
-              <p className="font-bold text-[#1D1D1F] text-[15px]">바닥 권리금 보존</p>
-              <p className="text-[12px] text-[#86868B]">메인 대로변 A급 상권 입지</p>
+              <p className="font-bold text-[#1D1D1F] text-[15px]">바닥 권리금 (상권 가치 상승)</p>
+              <p className="text-[12px] text-[#86868B]">기존 3천만 원에서 독점 상권 프리미엄 반영</p>
             </div>
             <span className="font-bold text-[#1D1D1F]">{formatCompact(basePremium)}원</span>
           </div>
@@ -568,8 +568,8 @@ function ValuationSection({ avgProfit }: { avgProfit: number }) {
           
           <div className="bg-[#F5F5F7] p-4 rounded-2xl flex items-center justify-between">
             <div>
-              <p className="font-bold text-[#1D1D1F] text-[15px]">영업 권리금</p>
-              <p className="text-[12px] text-[#86868B]">월평균 순이익 × 12개월</p>
+              <p className="font-bold text-[#1D1D1F] text-[15px]">영업 권리금 (안정성 프리미엄)</p>
+              <p className="text-[12px] text-[#86868B]">월평균 순이익 × 18개월 (오토 매장 기준 최고 등급)</p>
             </div>
             <span className="font-bold text-[#007AFF]">{formatCompact(opPremium)}원</span>
           </div>
