@@ -1,15 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
-import { financialData, formatCurrency, formatCompact } from './data';
+import { financialData, formatCurrency, formatCompact, getMonthName } from './data';
 import { 
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   AreaChart, Area
 } from 'recharts';
 import { 
   LayoutDashboard, TrendingUp, Calculator, Building2, Store, Users, 
-  CheckCircle2, ShieldCheck, BadgePercent, Clock
+  CheckCircle2, ShieldCheck, BadgePercent, Clock, Calendar, CreditCard, ChevronRight, X, BrainCircuit, Sparkles
 } from 'lucide-react';
 
-type Tab = 'dashboard' | 'trend' | 'simulator' | 'valuation';
+type Tab = 'dashboard' | 'trend' | 'simulator' | 'valuation' | 'monthly';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
@@ -57,6 +57,7 @@ export default function App() {
             {activeTab === 'trend' && '매출 트렌드 분석'}
             {activeTab === 'simulator' && '순이익 시뮬레이터'}
             {activeTab === 'valuation' && '권리금 타당성 분석'}
+            {activeTab === 'monthly' && '월별 상세 실적'}
           </h1>
           <Store size={24} className="text-[#007AFF]" />
         </div>
@@ -67,6 +68,7 @@ export default function App() {
         {activeTab === 'trend' && <TrendSection />}
         {activeTab === 'simulator' && <SimulatorSection avgSales={avgSales} />}
         {activeTab === 'valuation' && <ValuationSection avgProfit={avgProfit} />}
+        {activeTab === 'monthly' && <MonthlySection />}
       </main>
 
       {/* Bottom Navigation */}
@@ -90,12 +92,259 @@ export default function App() {
           onClick={() => setActiveTab('simulator')} 
         />
         <NavItem 
-          icon={<Building2 size={24} />} 
+          icon={<Building2 size={22} />} 
           label="가치분석" 
           isActive={activeTab === 'valuation'} 
           onClick={() => setActiveTab('valuation')} 
         />
+        <NavItem 
+          icon={<Calendar size={22} />} 
+          label="월별상세" 
+          isActive={activeTab === 'monthly'} 
+          onClick={() => setActiveTab('monthly')} 
+        />
       </nav>
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+// 5. Monthly Details Section
+// ----------------------------------------------------
+function MonthlySection() {
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(financialData.length - 1);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const isEstimate = (monthStr: string) => {
+    const monthNum = parseInt(monthStr.split('-')[1], 10);
+    return monthNum > 5;
+  };
+
+  const currentData = useMemo(() => {
+    const d = financialData[selectedMonthIndex];
+    const expenses = d.expenses.material + d.expenses.labor + d.expenses.rent + d.expenses.others;
+    return {
+      title: `${getMonthName(d.month)} 현황`,
+      isEstimate: isEstimate(d.month),
+      sales: d.sales,
+      expenses,
+      profit: d.sales - expenses,
+      details: d.expenses.details
+    };
+  }, [selectedMonthIndex]);
+
+  const expenseRatio = (currentData.expenses / currentData.sales) * 100;
+  const profitRatio = (currentData.profit / currentData.sales) * 100;
+
+  const getAiInsight = (monthStr: string) => {
+    const monthNum = parseInt(monthStr.split('-')[1], 10);
+    switch (monthNum) {
+      case 6:
+        return {
+          flow: "여름의 시작으로 전월 대비 매출은 약간 안정세(2,600만)를 보이나, 본격 성수기를 앞둔 숨 고르기 기간으로 적절한 예측입니다.",
+          warning: "예상 재료비 원가율이 약 25%로, 5월(34%) 대비 급격히 낮게 세팅되었습니다. 실제 빙수/아이스 메뉴 원가율 점검이 필요합니다."
+        };
+      case 7:
+        return {
+          flow: "본격적인 무더위 진입과 장마철 배달 수요 증가로 6월 대비 매출 상승(2,750만)이 예상된 매우 현실적인 지표입니다.",
+          warning: "인건비가 575만 원으로 역대 최고치 부근입니다. 성수기 알바생 충원에 대비한 바쁜 피크타임 위주의 스케줄 배치가 핵심입니다."
+        };
+      case 8:
+        return {
+          flow: "연중 최대 매출(3,200만) 피크입니다. 아이스 음료 수요가 극에 달하는 폭염 시즌이므로 예측 흐름이 매우 타당합니다.",
+          warning: "최고 매출임에도 재료비 원가율을 24.2%로 극히 낮게 잡았습니다. 부재료 극심한 로스를 반드시 막아야 달성 가능합니다."
+        };
+      case 9:
+        return {
+          flow: "휴가철 종료 및 선선해진 날씨로 인해 8월 대비 매출이 다소 하락(2,980만)하는 전형적인 카페 가을 초입 패턴입니다.",
+          warning: "매출은 줄었으나 재료비 원가율이 31%로 상승합니다. 여름 부재료들의 꼼꼼한 재고 처리 및 관리가 순이익 방어의 키입니다."
+        };
+      case 10:
+        return {
+          flow: "가을 나들이 및 객단가 상승으로 하반기 2차 매출 피크(3,300만)를 달성하는 매우 훌륭한 시나리오입니다.",
+          warning: "재료비가 예측치 중 처음으로 1천만 원을 돌파합니다. 핫음료 원가 비중이 높아져 순이익을 갉아먹지 않도록 점검하세요."
+        };
+      case 11:
+        return {
+          flow: "10월 피크 이후 조금씩 안정세(3,150만)에 접어드는 무난하고 현실적인 초겨울 매출 흐름입니다.",
+          warning: "매출은 하락했으나 인건비(584만)는 1년 중 최고치입니다. 고정 비용을 어떻게 방어할 것인지가 11월의 숙제입니다."
+        };
+      case 12:
+        return {
+          flow: "한겨울 추위 진입으로 홀 방문객 매출이 감소(2,890만)하는 계절성이 아주 논리적으로 반영되었습니다.",
+          warning: "크리스마스 프로모션 등을 위해 재료/홍보비 지출이 늘어날 수 있습니다. 내년을 준비하는 재고 정리에 집중하세요."
+        };
+      default:
+        return {
+          flow: "실제 매출 실적 데이터입니다. 우수한 성과를 보이고 있습니다.",
+          warning: "안정적인 수익 구조를 유지하며 다음 달의 목표치를 세워보세요."
+        };
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x">
+        {financialData.map((d, idx) => {
+          const isSelected = idx === selectedMonthIndex;
+          const est = isEstimate(d.month);
+          return (
+            <button
+              key={d.month}
+              onClick={() => setSelectedMonthIndex(idx)}
+              className={`snap-center whitespace-nowrap px-4 py-2 rounded-full text-[14px] font-semibold transition-all duration-300 flex items-center gap-1.5 ${
+                isSelected 
+                  ? 'bg-[#1D1D1F] text-white shadow-md' 
+                  : 'bg-white text-[#86868B] border border-[#E5E5EA]/50'
+              }`}
+            >
+              {getMonthName(d.month)}
+              {est && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-white/20 text-white' : 'bg-[#F2F2F7] text-[#86868B]'}`}>예상</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      <section className="bg-white rounded-[32px] p-6 shadow-sm border border-[#E5E5EA]/50 relative overflow-hidden group">
+        <div className="flex items-center gap-2 mb-2 relative z-10">
+          <p className="text-[#86868B] text-[14px] font-semibold">{currentData.title}</p>
+          {currentData.isEstimate && (
+            <span className="bg-[#F2F2F7] text-[#86868B] text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+              <Sparkles size={10} /> 시뮬레이션
+            </span>
+          )}
+        </div>
+
+        <h2 className="text-[36px] leading-tight font-bold tracking-tight mb-6 relative z-10">
+          <span className="text-[#007AFF] drop-shadow-sm">{formatCurrency(currentData.profit)}</span>
+          <span className="block text-[#86868B] text-[18px] font-semibold mt-1">
+            {currentData.isEstimate ? '예상 순이익' : '실제 순이익'}
+          </span>
+        </h2>
+
+        <div className="mb-2 relative z-10">
+          <div className="flex justify-between text-[14px] font-semibold mb-2">
+            <span className="text-[#1D1D1F]">총 매출 {formatCompact(currentData.sales)}</span>
+          </div>
+          
+          <div className="h-4 bg-[#F5F5F7] rounded-full overflow-hidden flex w-full shadow-inner mb-3">
+            <div 
+              className={`h-full bg-[#FF3B30] transition-all duration-1000 ${currentData.isEstimate ? 'opacity-50' : ''}`}
+              style={{ width: `${expenseRatio}%` }}
+            />
+            <div 
+              className={`h-full bg-[#007AFF] transition-all duration-1000 ${currentData.isEstimate ? 'opacity-50' : ''}`}
+              style={{ width: `${profitRatio}%` }}
+            />
+          </div>
+          
+          <div className="flex justify-between text-[13px] px-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#FF3B30]"></div>
+              <span className="text-[#86868B] font-medium">지출</span>
+              <span className="font-bold text-[#1D1D1F]">{formatCompact(currentData.expenses)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#007AFF]"></div>
+              <span className="text-[#86868B] font-medium">수익</span>
+              <span className="font-bold text-[#1D1D1F]">{formatCompact(currentData.profit)}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {currentData.isEstimate && (
+        <section className="bg-gradient-to-br from-[#F5F5F7] to-white rounded-[28px] p-6 shadow-sm border border-[#007AFF]/10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-full bg-[#007AFF]/10 flex items-center justify-center">
+              <BrainCircuit size={14} className="text-[#007AFF]" />
+            </div>
+            <h3 className="text-[16px] font-bold text-[#1D1D1F]">AI 시뮬레이션 리포트</h3>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="bg-white/80 rounded-2xl p-4 border border-[#E5E5EA]/50">
+              <h4 className="text-[13px] font-bold text-[#1D1D1F] mb-1 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]"></span> 매출 타당성
+              </h4>
+              <p className="text-[#86868B] text-[13px] leading-relaxed">
+                {getAiInsight(financialData[selectedMonthIndex].month).flow}
+              </p>
+            </div>
+            <div className="bg-white/80 rounded-2xl p-4 border border-[#E5E5EA]/50">
+              <h4 className="text-[13px] font-bold text-[#1D1D1F] mb-1 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]"></span> 주의 구간
+              </h4>
+              <p className="text-[#86868B] text-[13px] leading-relaxed">
+                {getAiInsight(financialData[selectedMonthIndex].month).warning}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {currentData.details && (
+        <button 
+          onClick={() => setIsDetailsOpen(true)}
+          className="w-full bg-white hover:bg-[#F5F5F7] transition-all rounded-[24px] p-4 flex items-center justify-between shadow-sm border border-[#E5E5EA]/50"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-[#FF3B30]/10 flex items-center justify-center">
+              <CreditCard size={20} className="text-[#FF3B30]" />
+            </div>
+            <div className="text-left">
+              <p className="text-[#1D1D1F] font-bold text-base mb-0.5">지출 상세 내역 확인</p>
+              <p className="text-[#86868B] text-[13px] font-medium">총 지출 {formatCurrency(currentData.expenses)}</p>
+            </div>
+          </div>
+          <ChevronRight size={20} className="text-[#86868B]" />
+        </button>
+      )}
+
+      {isDetailsOpen && currentData.details && (
+        <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDetailsOpen(false)} />
+          <div className="relative bg-white w-full sm:max-w-md rounded-t-[32px] sm:rounded-[32px] p-6 max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex justify-center mb-4 sm:hidden">
+              <div className="w-12 h-1.5 bg-[#E5E5EA] rounded-full" />
+            </div>
+            
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-[#1D1D1F]">{getMonthName(financialData[selectedMonthIndex].month)} 상세 지출</h3>
+              <button onClick={() => setIsDetailsOpen(false)} className="bg-[#F5F5F7] p-2 rounded-full">
+                <X size={20} className="text-[#86868B]" />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto flex-1 pb-4">
+              <div className="space-y-1">
+                <DetailRow label="재료비상반" amount={currentData.details.materialFirst} />
+                <DetailRow label="재료비후반" amount={currentData.details.materialSecond} />
+                <div className="h-px bg-[#F5F5F7] my-3" />
+                <DetailRow label="인건비" amount={currentData.details.labor} />
+                <DetailRow label="임대료" amount={currentData.details.rent} />
+                <div className="h-px bg-[#F5F5F7] my-3" />
+                <DetailRow label="관리비" amount={currentData.details.admin} />
+                <DetailRow label="기장료" amount={currentData.details.accounting} />
+                <DetailRow label="로열티" amount={currentData.details.royalty} />
+                <DetailRow label="홍보비" amount={currentData.details.promotion} />
+                <DetailRow label="CCTV/전화" amount={currentData.details.cctv} />
+                <DetailRow label="화재보험" amount={currentData.details.insurance} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DetailRow({ label, amount }: { label: string, amount: number }) {
+  if (amount === 0) return null;
+  return (
+    <div className="flex justify-between items-center py-2.5 px-1">
+      <span className="text-[#86868B] font-medium text-[14px]">{label}</span>
+      <span className="text-[#1D1D1F] font-bold text-[14px]">{formatCurrency(amount)}</span>
     </div>
   );
 }
@@ -346,12 +595,12 @@ function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, la
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 w-16 transition-colors ${isActive ? 'text-[#007AFF]' : 'text-[#86868B] hover:text-[#1D1D1F]'}`}
+      className={`flex flex-col items-center gap-1 w-14 sm:w-16 transition-colors ${isActive ? 'text-[#007AFF]' : 'text-[#86868B] hover:text-[#1D1D1F]'}`}
     >
       <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-[#007AFF]/10' : ''}`}>
         {icon}
       </div>
-      <span className="text-[11px] font-bold tracking-tight">{label}</span>
+      <span className="text-[10px] sm:text-[11px] font-bold tracking-tight whitespace-nowrap">{label}</span>
     </button>
   );
 }
