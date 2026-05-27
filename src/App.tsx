@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { 
   LayoutDashboard, TrendingUp, Calculator, Building2, Store, Users, 
-  CheckCircle2, ShieldCheck, BadgePercent, Clock, Calendar, CreditCard, ChevronRight, X, BrainCircuit, Sparkles
+  CheckCircle2, ShieldCheck, BadgePercent, Clock, Calendar, CreditCard, ChevronRight, X, BrainCircuit, Sparkles, Coffee
 } from 'lucide-react';
 
 type Tab = 'dashboard' | 'trend' | 'simulator' | 'valuation' | 'monthly';
@@ -38,10 +38,10 @@ export default function App() {
       <div className="fixed inset-0 bg-[#F5F5F7] flex flex-col items-center justify-center z-[100] animate-out fade-out duration-700 delay-1500 fill-mode-forwards">
         <div className="animate-in zoom-in duration-700 flex flex-col items-center text-center px-6">
           <div className="w-24 h-24 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center justify-center mb-6">
-            <Store size={48} className="text-[#007AFF]" />
+            <Coffee size={48} className="text-[#34C759]" />
           </div>
-          <h1 className="text-3xl font-bold text-[#1D1D1F] tracking-tight mb-2">우지커피 양수도 리포트</h1>
-          <p className="text-[#86868B] font-medium">프리미엄 상권의 압도적 수익률을 확인하세요</p>
+          <h1 className="text-3xl font-bold text-[#1D1D1F] tracking-tight mb-2">우지 밸런스</h1>
+          <p className="text-[#86868B] font-medium">가장 직관적인 카페 수익 시뮬레이션</p>
         </div>
       </div>
     );
