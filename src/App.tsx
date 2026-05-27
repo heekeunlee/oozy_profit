@@ -18,10 +18,10 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Determine if a month is an estimate (After 2026-06)
+  // Determine if a month is an estimate (After 2026-05)
   const isEstimate = (monthStr: string) => {
     const monthNum = parseInt(monthStr.split('-')[1], 10);
-    return monthNum > 6;
+    return monthNum > 5;
   };
 
   // Data processing based on selected range
@@ -179,7 +179,9 @@ function App() {
 
           <h2 className="text-[44px] leading-tight font-bold tracking-tight mb-8 relative z-10">
             <span className="text-[#007AFF] drop-shadow-sm">{formatCurrency(currentData.profit)}</span>
-            <span className="block text-[#86868B] text-[22px] font-semibold mt-1">순이익</span>
+            <span className="block text-[#86868B] text-[22px] font-semibold mt-1">
+              {currentData.isEstimate ? '예상 순이익' : '순이익'}
+            </span>
           </h2>
 
           {/* Apple-style progress visualization */}
