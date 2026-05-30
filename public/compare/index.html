@@ -390,23 +390,23 @@
             <!-- Group Header -->
             <tr class="text-[10px] font-bold uppercase tracking-wider text-[#86868B] border-b border-[#E5E5EA]/60 bg-[#F5F5F7]/50">
               <th class="py-2.5 px-3 border-r border-[#E5E5EA]/60" rowspan="2">영업월</th>
-              <th class="py-1.5 px-3 text-center border-r border-[#E5E5EA]/60 bg-[#007AFF]/5 text-[#007AFF]" colspan="3">매출액 (Sales)</th>
-              <th class="py-1.5 px-3 text-center border-r border-[#E5E5EA]/60 bg-rose-500/5 text-rose-600" colspan="3">제 경비 (Expenses)</th>
-              <th class="py-1.5 px-3 text-center bg-emerald-500/5 text-emerald-600" colspan="3">순이익 (Net Profit)</th>
+              <th class="py-1.5 px-3 text-center border-r border-[#E5E5EA]/60 bg-slate-500/5 text-slate-700" colspan="3">2025년도 실적 (2025)</th>
+              <th class="py-1.5 px-3 text-center border-r border-[#E5E5EA]/60 bg-[#007AFF]/5 text-[#007AFF]" colspan="3">2026년도 실적 (2026)</th>
+              <th class="py-1.5 px-3 text-center bg-emerald-500/5 text-emerald-600" colspan="3">전년 대비 증감 (YoY)</th>
             </tr>
             <!-- Sub Header -->
             <tr class="text-[9px] font-bold uppercase tracking-wider text-[#86868B] border-b border-[#E5E5EA]">
-              <th class="py-2 px-3 text-right bg-[#007AFF]/2">25년</th>
-              <th class="py-2 px-3 text-right bg-[#007AFF]/2 text-[#007AFF]">26년</th>
-              <th class="py-2 px-3 text-center border-r border-[#E5E5EA]/60 bg-[#007AFF]/2">전년비 (YoY)</th>
+              <th class="py-2 px-3 text-right bg-slate-500/2">매출액</th>
+              <th class="py-2 px-3 text-right bg-slate-500/2">제 경비</th>
+              <th class="py-2 px-3 text-right border-r border-[#E5E5EA]/60 bg-slate-500/2">순이익</th>
               
-              <th class="py-2 px-3 text-right bg-rose-500/2">25년</th>
-              <th class="py-2 px-3 text-right bg-rose-500/2 text-rose-600">26년</th>
-              <th class="py-2 px-3 text-center border-r border-[#E5E5EA]/60 bg-rose-500/2">전년비 (YoY)</th>
+              <th class="py-2 px-3 text-right bg-[#007AFF]/2">매출액</th>
+              <th class="py-2 px-3 text-right bg-[#007AFF]/2">제 경비</th>
+              <th class="py-2 px-3 text-right border-r border-[#E5E5EA]/60 bg-[#007AFF]/2">순이익</th>
               
-              <th class="py-2 px-3 text-right bg-emerald-500/2">25년</th>
-              <th class="py-2 px-3 text-right bg-emerald-500/2 text-emerald-600">26년</th>
-              <th class="py-2 px-3 text-center bg-emerald-500/2">전년비 (YoY)</th>
+              <th class="py-2 px-3 text-center bg-emerald-500/2">매출 YoY</th>
+              <th class="py-2 px-3 text-center bg-emerald-500/2">경비 YoY</th>
+              <th class="py-2 px-3 text-center bg-emerald-500/2">순이익 YoY</th>
             </tr>
           </thead>
           <tbody id="table-body" class="divide-y divide-[#E5E5EA] font-medium text-[#1D1D1F]">
@@ -815,24 +815,12 @@
         tdMonth.innerHTML = `${parseInt(d.month)}월` + (d.isEstimate2026 && d.sales2026 !== null ? '<br/><span class="text-[8px] px-1 py-0.2 rounded bg-[#007AFF]/10 text-[#007AFF] border border-[#007AFF]/20 font-normal">보정</span>' : '');
         tr.appendChild(tdMonth);
 
+        // 2025 Performance
         // Sales 25
         const tdSales25 = document.createElement('td');
         tdSales25.className = "py-3 px-3 text-right text-[#86868B]";
         tdSales25.innerText = formatCurrency(d.sales2025);
         tr.appendChild(tdSales25);
-
-        // Sales 26
-        const tdSales26 = document.createElement('td');
-        tdSales26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
-        tdSales26.innerText = formatCurrency(d.sales2026);
-        tr.appendChild(tdSales26);
-
-        // Sales YoY
-        const tdSalesYoY = document.createElement('td');
-        const salesYoY = getYoYStyleAndText(d.sales2025, d.sales2026, false);
-        tdSalesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + salesYoY.className;
-        tdSalesYoY.innerText = salesYoY.text;
-        tr.appendChild(tdSalesYoY);
 
         // Expenses 25
         const tdExpenses25 = document.createElement('td');
@@ -840,30 +828,45 @@
         tdExpenses25.innerText = formatCurrency(d.expenses2025);
         tr.appendChild(tdExpenses25);
 
+        // Profit 25
+        const tdProfit25 = document.createElement('td');
+        tdProfit25.className = "py-3 px-3 text-right text-[#86868B] border-r border-[#E5E5EA]/60";
+        tdProfit25.innerText = formatCurrency(d.profit2025);
+        tr.appendChild(tdProfit25);
+
+        // 2026 Performance
+        // Sales 26
+        const tdSales26 = document.createElement('td');
+        tdSales26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
+        tdSales26.innerText = formatCurrency(d.sales2026);
+        tr.appendChild(tdSales26);
+
         // Expenses 26
         const tdExpenses26 = document.createElement('td');
         tdExpenses26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
         tdExpenses26.innerText = formatCurrency(d.expenses2026);
         tr.appendChild(tdExpenses26);
 
+        // Profit 26
+        const tdProfit26 = document.createElement('td');
+        tdProfit26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold border-r border-[#E5E5EA]/60";
+        tdProfit26.innerText = formatCurrency(d.profit2026);
+        tr.appendChild(tdProfit26);
+
+        // YoY Comparison
+        // Sales YoY
+        const tdSalesYoY = document.createElement('td');
+        const salesYoY = getYoYStyleAndText(d.sales2025, d.sales2026, false);
+        tdSalesYoY.className = "py-3 px-3 text-center " + salesYoY.className;
+        tdSalesYoY.innerText = salesYoY.text;
+        tr.appendChild(tdSalesYoY);
+
         // Expenses YoY
         const tdExpensesYoY = document.createElement('td');
         const expensesYoY = getYoYStyleAndText(d.expenses2025, d.expenses2026, true);
-        tdExpensesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + expensesYoY.className;
+        tdExpensesYoY.className = "py-3 px-3 text-center " + expensesYoY.className;
         tdExpensesYoY.innerText = expensesYoY.text;
         tr.appendChild(tdExpensesYoY);
-
-        // Profit 25
-        const tdProfit25 = document.createElement('td');
-        tdProfit25.className = "py-3 px-3 text-right text-[#86868B]";
-        tdProfit25.innerText = formatCurrency(d.profit2025);
-        tr.appendChild(tdProfit25);
-
-        // Profit 26
-        const tdProfit26 = document.createElement('td');
-        tdProfit26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
-        tdProfit26.innerText = formatCurrency(d.profit2026);
-        tr.appendChild(tdProfit26);
 
         // Profit YoY
         const tdProfitYoY = document.createElement('td');
@@ -896,24 +899,12 @@
       tfMonth.innerHTML = '누적 (YTD)<br/><span class="text-[8px] font-normal text-[#86868B] block mt-0.5">1~5월 누계</span>';
       footTr.appendChild(tfMonth);
 
+      // 2025 Performance Total
       // Sales 25 total
       const tfSales25 = document.createElement('td');
       tfSales25.className = "py-3 px-3 text-right text-[#86868B] font-bold";
       tfSales25.innerText = formatCurrency(totalSales25);
       footTr.appendChild(tfSales25);
-
-      // Sales 26 total
-      const tfSales26 = document.createElement('td');
-      tfSales26.className = "py-3 px-3 text-right text-[#007AFF] font-extrabold";
-      tfSales26.innerText = formatCurrency(totalSales26);
-      footTr.appendChild(tfSales26);
-
-      // Sales YoY total
-      const tfSalesYoY = document.createElement('td');
-      const salesYoY = getYoYStyleAndText(totalSales25, totalSales26, false);
-      tfSalesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + salesYoY.className;
-      tfSalesYoY.innerText = salesYoY.text;
-      footTr.appendChild(tfSalesYoY);
 
       // Expenses 25 total
       const tfExpenses25 = document.createElement('td');
@@ -921,30 +912,45 @@
       tfExpenses25.innerText = formatCurrency(totalExpenses25);
       footTr.appendChild(tfExpenses25);
 
+      // Profit 25 total
+      const tfProfit25 = document.createElement('td');
+      tfProfit25.className = "py-3 px-3 text-right text-[#86868B] font-bold border-r border-[#E5E5EA]/60";
+      tfProfit25.innerText = formatCurrency(totalProfit25);
+      footTr.appendChild(tfProfit25);
+
+      // 2026 Performance Total
+      // Sales 26 total
+      const tfSales26 = document.createElement('td');
+      tfSales26.className = "py-3 px-3 text-right text-[#007AFF] font-extrabold";
+      tfSales26.innerText = formatCurrency(totalSales26);
+      footTr.appendChild(tfSales26);
+
       // Expenses 26 total
       const tfExpenses26 = document.createElement('td');
       tfExpenses26.className = "py-3 px-3 text-right text-rose-600 font-extrabold";
       tfExpenses26.innerText = formatCurrency(totalExpenses26);
       footTr.appendChild(tfExpenses26);
 
+      // Profit 26 total
+      const tfProfit26 = document.createElement('td');
+      tfProfit26.className = "py-3 px-3 text-right text-emerald-600 font-extrabold border-r border-[#E5E5EA]/60";
+      tfProfit26.innerText = formatCurrency(totalProfit26);
+      footTr.appendChild(tfProfit26);
+
+      // YoY Comparison Total
+      // Sales YoY total
+      const tfSalesYoY = document.createElement('td');
+      const salesYoY = getYoYStyleAndText(totalSales25, totalSales26, false);
+      tfSalesYoY.className = "py-3 px-3 text-center " + salesYoY.className;
+      tfSalesYoY.innerText = salesYoY.text;
+      footTr.appendChild(tfSalesYoY);
+
       // Expenses YoY total
       const tfExpensesYoY = document.createElement('td');
       const expensesYoY = getYoYStyleAndText(totalExpenses25, totalExpenses26, true);
-      tfExpensesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + expensesYoY.className;
+      tfExpensesYoY.className = "py-3 px-3 text-center " + expensesYoY.className;
       tfExpensesYoY.innerText = expensesYoY.text;
       footTr.appendChild(tfExpensesYoY);
-
-      // Profit 25 total
-      const tfProfit25 = document.createElement('td');
-      tfProfit25.className = "py-3 px-3 text-right text-[#86868B] font-bold";
-      tfProfit25.innerText = formatCurrency(totalProfit25);
-      footTr.appendChild(tfProfit25);
-
-      // Profit 26 total
-      const tfProfit26 = document.createElement('td');
-      tfProfit26.className = "py-3 px-3 text-right text-emerald-600 font-extrabold";
-      tfProfit26.innerText = formatCurrency(totalProfit26);
-      footTr.appendChild(tfProfit26);
 
       // Profit YoY total
       const tfProfitYoY = document.createElement('td');
