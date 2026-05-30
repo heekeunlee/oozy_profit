@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oozy Pulse - 25/26년 손익 비교 분석 대시보드</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+          },
+          backdropBlur: {
+            xs: '2px',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom Styles for Scrollbars & Glassmorphism -->
+  <style>
+    /* Custom glassy backgrounds */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    .glass-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    .glass-input:focus {
+      border-color: #3b82f6;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Smooth sliders */
+    input[type="range"]::-webkit-slider-thumb {
+      background: #3b82f6;
+      border: 2px solid #ffffff;
+      border-radius: 9999px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    }
+    
+    /* Hide scrollbar */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+
+  <!-- ApexCharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white">
+
+  <!-- Background Glows -->
+  <div class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-950/30 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+  <!-- Container -->
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10 flex flex-col min-h-screen">
+    
+    <!-- Top Header -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between pb-8 mb-8 border-b border-slate-800/60 gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i data-lucide="activity" class="text-white w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-bold font-outfit tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">Oozy Pulse</h1>
+            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[11px] font-bold px-2 py-0.5 rounded-full">Comparative Analytics</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 font-medium">우지커피 2025년 - 2026년 다이내믹 재무 성과 비교 분석기</p>
+        </div>
+      </div>
+      
+      <!-- Top Action Controls -->
+      <div class="flex items-center gap-3">
+        <button onclick="exportCSV()" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm text-slate-300">
+          <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+          <span>엑셀 CSV 내보내기</span>
+        </button>
+        <button onclick="resetSimulation()" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm text-slate-300">
+          <i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i>
+          <span>보정 리셋</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top KPI Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      
+      <!-- Card 1: Sales Summary -->
+      <div class="glass-panel rounded-3xl p-6 relative overflow-hidden group shadow-xl">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-[50px] pointer-events-none group-hover:bg-blue-500/10 transition-colors"></div>
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl">
+            <i data-lucide="trending-up" class="w-5 h-5"></i>
+          </div>
+          <span id="kpi-sales-pct" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> 0.0%
+          </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">누적 총 매출액</p>
+        <div class="flex flex-col gap-0.5">
+          <h3 id="kpi-sales-2026" class="text-2xl font-black font-outfit text-white">0원</h3>
+          <p id="kpi-sales-2025" class="text-xs text-slate-400 font-medium">25년 누적: 0원</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Expenses Summary -->
+      <div class="glass-panel rounded-3xl p-6 relative overflow-hidden group shadow-xl">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-bl-[50px] pointer-events-none group-hover:bg-red-500/10 transition-colors"></div>
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2.5 bg-red-500/10 text-red-400 rounded-xl">
+            <i data-lucide="credit-card" class="w-5 h-5"></i>
+          </div>
+          <span id="kpi-expenses-pct" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 flex items-center gap-1">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> 0.0%
+          </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">누적 총 경비</p>
+        <div class="flex flex-col gap-0.5">
+          <h3 id="kpi-expenses-2026" class="text-2xl font-black font-outfit text-white">0원</h3>
+          <p id="kpi-expenses-2025" class="text-xs text-slate-400 font-medium">25년 누적: 0원</p>
+        </div>
+      </div>
+
+      <!-- Card 3: Profit Summary -->
+      <div class="glass-panel rounded-3xl p-6 relative overflow-hidden group shadow-xl">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-[50px] pointer-events-none group-hover:bg-amber-500/10 transition-colors"></div>
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+          <span id="kpi-profit-pct" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> 0.0%
+          </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">누적 총 순이익</p>
+        <div class="flex flex-col gap-0.5">
+          <h3 id="kpi-profit-2026" class="text-2xl font-black font-outfit text-white">0원</h3>
+          <p id="kpi-profit-2025" class="text-xs text-slate-400 font-medium">25년 누적: 0원</p>
+        </div>
+      </div>
+
+      <!-- Card 4: Net Margin Summary -->
+      <div class="glass-panel rounded-3xl p-6 relative overflow-hidden group shadow-xl">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-[50px] pointer-events-none group-hover:bg-purple-500/10 transition-colors"></div>
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+          </div>
+          <span id="kpi-margin-diff" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
+             0.0%p
+          </span>
+        </div>
+        <p class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">평균 순이익 마진율</p>
+        <div class="flex flex-col gap-0.5">
+          <h3 id="kpi-margin-2026" class="text-2xl font-black font-outfit text-white">0.0%</h3>
+          <p id="kpi-margin-2025" class="text-xs text-slate-400 font-medium">25년 평균: 0.0%</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
+      
+      <!-- Charts Area (Left/Center 2 Columns) -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Interactive Chart Card -->
+        <div class="glass-panel rounded-3xl p-6 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i data-lucide="pie-chart" class="text-blue-500 w-5 h-5"></i>
+                연간 월별 손익 분석 차트
+              </h3>
+              <p class="text-xs text-slate-400">2025년과 2026년의 각 월별 수치 증감 추세 시각화</p>
+            </div>
+            
+            <!-- Metric Select Toggle -->
+            <div class="flex bg-slate-900/80 p-1 border border-slate-800 rounded-xl self-start sm:self-center">
+              <button onclick="changeMetric('sales')" id="btn-sales" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm">
+                매출비교
+              </button>
+              <button onclick="changeMetric('expenses')" id="btn-expenses" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white">
+                경비비교
+              </button>
+              <button onclick="changeMetric('profit')" id="btn-profit" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white">
+                순이익비교
+              </button>
+            </div>
+          </div>
+          
+          <!-- Chart Placeholder -->
+          <div class="w-full h-80 relative">
+            <div id="compare-chart"></div>
+          </div>
+        </div>
+
+        <!-- Custom Insight Summary -->
+        <div class="bg-gradient-to-r from-blue-950/20 via-indigo-950/15 to-slate-900/10 border border-blue-500/10 rounded-3xl p-6 shadow-md flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+            <i data-lucide="sparkles" class="text-blue-400 w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">Oozy Pulse 스마트 인사이트 리포트</h4>
+            <p id="ai-insight-text" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+              데이터 계산 중...
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Simulator/Month Panel Area (Right 1 Column) -->
+      <div class="space-y-6">
+        
+        <!-- May 2026 Predictor Panel -->
+        <div class="glass-panel rounded-3xl p-6 border-blue-500/20 shadow-2xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-2 h-full bg-blue-500"></div>
+          
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+              <i data-lucide="sliders" class="text-blue-400 w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-white">2026년 5월 경비 보정기</h3>
+              <p class="text-[10px] text-slate-400">미결산된 5월의 예상 고정비를 반영해 보세요.</p>
+            </div>
+          </div>
+          
+          <!-- Slider 1: Rent -->
+          <div class="space-y-1.5 mb-4">
+            <div class="flex justify-between items-center text-xs font-bold">
+              <span class="text-slate-400 flex items-center gap-1"><i data-lucide="home" class="w-3.5 h-3.5"></i> 임대료 고정비</span>
+              <span id="slider-rent-val" class="text-white">363만 원</span>
+            </div>
+            <input type="range" id="slider-rent" min="0" max="5000000" step="50000" value="3630000" oninput="updateSimulation()" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+          </div>
+
+          <!-- Slider 2: Labor -->
+          <div class="space-y-1.5 mb-4">
+            <div class="flex justify-between items-center text-xs font-bold">
+              <span class="text-slate-400 flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i> 인건비 (정직원/알바)</span>
+              <span id="slider-labor-val" class="text-white">540만 원</span>
+            </div>
+            <input type="range" id="slider-labor" min="0" max="10000000" step="100000" value="5400000" oninput="updateSimulation()" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+          </div>
+
+          <!-- Slider 3: Others -->
+          <div class="space-y-1.5 mb-6">
+            <div class="flex justify-between items-center text-xs font-bold">
+              <span class="text-slate-400 flex items-center gap-1"><i data-lucide="credit-card" class="w-3.5 h-3.5"></i> 기타 관리 경비 (관리비 등)</span>
+              <span id="slider-others-val" class="text-white">110만 원</span>
+            </div>
+            <input type="range" id="slider-others" min="0" max="3000000" step="50000" value="1100000" oninput="updateSimulation()" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+          </div>
+          
+          <div class="p-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl flex flex-col gap-1.5 shadow-inner">
+            <div class="flex justify-between items-center text-[11px] text-slate-400 font-bold">
+              <span>5월 매출액:</span>
+              <span id="sim-sales" class="text-white">3,313만 원</span>
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-slate-400 font-bold">
+              <span>보정 총 경비:</span>
+              <span id="sim-expenses" class="text-red-400">1,598만 원</span>
+            </div>
+            <div class="h-px bg-slate-800 my-1"></div>
+            <div class="flex justify-between items-center text-xs font-black">
+              <span class="text-slate-200">보정 최종 순이익:</span>
+              <span id="sim-profit" class="text-emerald-400 text-sm">1,715만 원</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Month Quick View Panel -->
+        <div class="glass-panel rounded-3xl p-6 shadow-xl">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="calendar" class="text-blue-500 w-4 h-4"></i>
+              월별 상세 실적 대조
+            </h3>
+            
+            <select id="month-selector" onchange="selectMonth(this.value)" class="glass-input text-xs font-bold px-3 py-1.5 rounded-xl cursor-pointer">
+              <!-- JS will fill options -->
+            </select>
+          </div>
+          
+          <div class="space-y-3">
+            <div class="grid grid-cols-3 text-center text-[10px] font-bold text-slate-500 border-b border-slate-800/60 pb-2">
+              <span>구분</span>
+              <span>2025년</span>
+              <span>2026년</span>
+            </div>
+            
+            <div class="flex flex-col gap-2.5 pt-1 text-xs">
+              <div class="flex justify-between items-center py-0.5">
+                <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> 매출</span>
+                <span id="detail-sales-25" class="text-slate-200 font-semibold">0원</span>
+                <span id="detail-sales-26" class="text-white font-bold">0원</span>
+              </div>
+              <div class="flex justify-between items-center py-0.5">
+                <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="credit-card" class="w-3.5 h-3.5"></i> 경비</span>
+                <span id="detail-expenses-25" class="text-slate-200 font-semibold">0원</span>
+                <span id="detail-expenses-26" class="text-white font-bold">0원</span>
+              </div>
+              <div class="flex justify-between items-center py-0.5">
+                <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="wallet" class="w-3.5 h-3.5"></i> 순이익</span>
+                <span id="detail-profit-25" class="text-slate-200 font-semibold">0원</span>
+                <span id="detail-profit-26" class="text-white font-bold">0원</span>
+              </div>
+              
+              <div class="h-px bg-slate-800/60 my-1"></div>
+              
+              <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-850 flex flex-col gap-1">
+                <div class="flex justify-between items-center text-[11px] font-bold">
+                  <span class="text-slate-400">매출 전년비 (YoY)</span>
+                  <span id="yoy-sales-pct" class="text-white font-black">0.0%</span>
+                </div>
+                <div class="flex justify-between items-center text-[11px] font-bold">
+                  <span class="text-slate-400">순이익 전년비 (YoY)</span>
+                  <span id="yoy-profit-pct" class="text-white font-black">0.0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Data Grid Table -->
+    <div class="glass-panel rounded-3xl p-6 shadow-xl mb-8 overflow-hidden">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="table" class="text-blue-500 w-5 h-5"></i>
+            연도별 손익 비교 상세 테이블
+          </h3>
+          <p class="text-xs text-slate-400">2025년과 2026년 전체 세부 내역 (2026년 5월은 실시간 보정값 반영)</p>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto scrollbar-hide">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-800/80">
+              <th class="py-3 px-4">영업월</th>
+              <th class="py-3 px-4 text-right">25년 매출</th>
+              <th class="py-3 px-4 text-right text-blue-400">26년 매출</th>
+              <th class="py-3 px-4 text-right">25년 경비</th>
+              <th class="py-3 px-4 text-right text-red-400">26년 경비</th>
+              <th class="py-3 px-4 text-right">25년 순이익</th>
+              <th class="py-3 px-4 text-right text-emerald-400">26년 순이익</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-slate-900 font-medium">
+            <!-- Row generation via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto pt-8 border-t border-slate-900 text-center text-xs text-slate-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <p>&copy; 2026 Oozy Coffee Profit Dashboard. Designed with premium aesthetics.</p>
+      <div class="flex gap-4 justify-center">
+        <a href="../" class="hover:text-blue-400 transition-colors font-bold">오리지널 매장 핵심지표 웹앱 이동 &rarr;</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Include the raw data file -->
+  <script src="./compare-data.js"></script>
+  
+  <script>
+    // State
+    let activeMetric = 'sales'; // 'sales' | 'expenses' | 'profit'
+    let currentSelectedMonth = "01";
+    let chartInstance = null;
+    
+    // Copy the original data into a local reactive copy
+    let localData = [];
+    
+    function formatCurrency(value) {
+      if (value === null || value === undefined || isNaN(value)) return '-';
+      return new Intl.NumberFormat('ko-KR').format(value) + '원';
+    }
+    
+    function formatPercentage(value) {
+      if (value === null || value === undefined || isNaN(value)) return '-';
+      const sign = value > 0 ? '+' : '';
+      return `${sign}${value.toFixed(1)}%`;
+    }
+
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      // Initialize Lucide Icons
+      lucide.createIcons();
+      
+      // Load data
+      localData = JSON.parse(JSON.stringify(window.compareData));
+      
+      // Fill selector options
+      const selector = document.getElementById('month-selector');
+      localData.forEach(d => {
+        const option = document.createElement('option');
+        option.value = d.month;
+        option.innerText = `${parseInt(d.month)}월`;
+        if (d.month === currentSelectedMonth) option.selected = true;
+        selector.appendChild(option);
+      });
+      
+      // Load simulation slider states
+      const simNode = localData.find(d => d.isEstimate2026 && d.defaultSimulation);
+      if (simNode) {
+        document.getElementById('slider-rent').value = simNode.defaultSimulation.rent;
+        document.getElementById('slider-labor').value = simNode.defaultSimulation.labor;
+        document.getElementById('slider-others').value = simNode.defaultSimulation.others;
+      }
+      
+      // Compute & Render
+      recalculateAndRender();
+    });
+
+    // Reset Simulation values
+    function resetSimulation() {
+      const simNode = localData.find(d => d.isEstimate2026 && d.defaultSimulation);
+      if (simNode) {
+        document.getElementById('slider-rent').value = simNode.defaultSimulation.rent;
+        document.getElementById('slider-labor').value = simNode.defaultSimulation.labor;
+        document.getElementById('slider-others').value = simNode.defaultSimulation.others;
+      }
+      recalculateAndRender();
+    }
+
+    // Slider calculations for 2026-05
+    function updateSimulation() {
+      recalculateAndRender();
+    }
+
+    function recalculateAndRender() {
+      // Find 2026-05 node
+      const simNode = localData.find(d => d.isEstimate2026 && d.defaultSimulation);
+      if (simNode) {
+        const simRent = parseInt(document.getElementById('slider-rent').value);
+        const simLabor = parseInt(document.getElementById('slider-labor').value);
+        const simOthers = parseInt(document.getElementById('slider-others').value);
+        
+        // Update values: base (first half material) + sliders
+        const originalBase = window.compareData.find(d => d.isEstimate2026 && d.defaultSimulation).expenses2026;
+        simNode.expenses2026 = originalBase + simRent + simLabor + simOthers;
+        simNode.profit2026 = simNode.sales2026 - simNode.expenses2026;
+        
+        // Display slider labels in Korean Man (Ten Thousand Won)
+        document.getElementById('slider-rent-val').innerText = (simRent / 10000).toLocaleString('ko-KR') + '만 원';
+        document.getElementById('slider-labor-val').innerText = (simLabor / 10000).toLocaleString('ko-KR') + '만 원';
+        document.getElementById('slider-others-val').innerText = (simOthers / 10000).toLocaleString('ko-KR') + '만 원';
+        
+        // Update Predictor panel output
+        document.getElementById('sim-sales').innerText = (simNode.sales2026 / 10000).toLocaleString('ko-KR') + '만 원';
+        document.getElementById('sim-expenses').innerText = (simNode.expenses2026 / 10000).toLocaleString('ko-KR') + '만 원';
+        document.getElementById('sim-profit').innerText = (simNode.profit2026 / 10000).toLocaleString('ko-KR') + '만 원';
+      }
+      
+      // Update Top KPIs
+      updateKPIs();
+      
+      // Draw Chart
+      drawChart();
+      
+      // Update Month Details
+      selectMonth(currentSelectedMonth);
+      
+      // Update Data Table
+      renderTable();
+      
+      // Update AI business insights
+      updateBusinessInsights();
+    }
+
+    function updateKPIs() {
+      // Calculate sums (only for valid actual/simulated data)
+      // 2026 has data for months 1-5 (5 is simulated)
+      const validMonths26 = localData.filter(d => d.sales2026 !== null);
+      const sumSales25 = validMonths26.reduce((sum, d) => sum + d.sales2025, 0);
+      const sumSales26 = validMonths26.reduce((sum, d) => sum + d.sales2026, 0);
+      
+      const sumExpenses25 = validMonths26.reduce((sum, d) => sum + d.expenses2025, 0);
+      const sumExpenses26 = validMonths26.reduce((sum, d) => sum + d.expenses2026, 0);
+      
+      const sumProfit25 = validMonths26.reduce((sum, d) => sum + d.profit2025, 0);
+      const sumProfit26 = validMonths26.reduce((sum, d) => sum + d.profit2026, 0);
+      
+      // Net Profit Margin
+      const margin25 = sumSales25 > 0 ? (sumProfit25 / sumSales25) * 100 : 0;
+      const margin26 = sumSales26 > 0 ? (sumProfit26 / sumSales26) * 100 : 0;
+      
+      // Write UI
+      document.getElementById('kpi-sales-2026').innerText = formatCurrency(sumSales26);
+      document.getElementById('kpi-sales-2025').innerText = `25년 동일기간 누적: ${formatCurrency(sumSales25)}`;
+      const salesPct = ((sumSales26 - sumSales25) / sumSales25) * 100;
+      updatePctLabel('kpi-sales-pct', salesPct);
+
+      document.getElementById('kpi-expenses-2026').innerText = formatCurrency(sumExpenses26);
+      document.getElementById('kpi-expenses-2025').innerText = `25년 동일기간 누적: ${formatCurrency(sumExpenses25)}`;
+      const expPct = ((sumExpenses26 - sumExpenses25) / sumExpenses25) * 100;
+      updatePctLabel('kpi-expenses-pct', expPct, true); // true means lower is better
+
+      document.getElementById('kpi-profit-2026').innerText = formatCurrency(sumProfit26);
+      document.getElementById('kpi-profit-2025').innerText = `25년 동일기간 누적: ${formatCurrency(sumProfit25)}`;
+      const profitPct = ((sumProfit26 - sumProfit25) / sumProfit25) * 100;
+      updatePctLabel('kpi-profit-pct', profitPct);
+
+      document.getElementById('kpi-margin-2026').innerText = `${margin26.toFixed(1)}%`;
+      document.getElementById('kpi-margin-2025').innerText = `25년 동일기간 평균: ${margin25.toFixed(1)}%`;
+      const marginDiff = margin26 - margin25;
+      updateMarginDiffLabel('kpi-margin-diff', marginDiff);
+    }
+
+    function updatePctLabel(id, pct, lowerIsBetter = false) {
+      const el = document.getElementById(id);
+      const icon = pct > 0 ? '<i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>' : '<i data-lucide="arrow-down-right" class="w-3.5 h-3.5"></i>';
+      const formatted = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
+      el.innerHTML = `${icon} ${formatted}`;
+      
+      // Style
+      const isPositiveGood = !lowerIsBetter ? pct > 0 : pct < 0;
+      if (isPositiveGood) {
+        el.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center gap-1";
+      } else {
+        el.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 flex items-center gap-1";
+      }
+      lucide.createIcons();
+    }
+
+    function updateMarginDiffLabel(id, diff) {
+      const el = document.getElementById(id);
+      const sign = diff > 0 ? '+' : '';
+      el.innerText = `${sign}${diff.toFixed(1)}%p`;
+      if (diff > 0) {
+        el.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400";
+      } else {
+        el.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400";
+      }
+    }
+
+    // Change Chart Metric
+    function changeMetric(metric) {
+      activeMetric = metric;
+      
+      // Update Button Styles
+      ['sales', 'expenses', 'profit'].forEach(m => {
+        const btn = document.getElementById(`btn-${m}`);
+        if (m === metric) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white";
+        }
+      });
+      
+      drawChart();
+    }
+
+    // Draw Chart using ApexCharts
+    function drawChart() {
+      // 2026 data series has values only for months where sales is not null
+      // We will show full 12 months for 2025, but 2026 line will stop at month 5
+      const months = localData.map(d => `${parseInt(d.month)}월`);
+      
+      let data2025 = [];
+      let data2026 = [];
+      
+      localData.forEach(d => {
+        if (activeMetric === 'sales') {
+          data2025.push((d.sales2025 / 10000).toFixed(0));
+          data2026.push(d.sales2026 !== null ? (d.sales2026 / 10000).toFixed(0) : null);
+        } else if (activeMetric === 'expenses') {
+          data2025.push((d.expenses2025 / 10000).toFixed(0));
+          data2026.push(d.expenses2026 !== null ? (d.expenses2026 / 10000).toFixed(0) : null);
+        } else {
+          data2025.push((d.profit2025 / 10000).toFixed(0));
+          data2026.push(d.profit2026 !== null ? (d.profit2026 / 10000).toFixed(0) : null);
+        }
+      });
+
+      const options = {
+        series: [
+          {
+            name: '2025년',
+            data: data2025
+          },
+          {
+            name: '2026년',
+            data: data2026
+          }
+        ],
+        chart: {
+          height: 320,
+          type: 'area',
+          background: 'transparent',
+          foreColor: '#94a3b8',
+          toolbar: {
+            show: false
+          },
+          animations: {
+            enabled: true,
+            easing: 'easeinout',
+            speed: 800,
+            animateGradually: {
+              enabled: true,
+              delay: 150
+            },
+            dynamicAnimation: {
+              enabled: true,
+              speed: 350
+            }
+          }
+        },
+        colors: ['#475569', '#3b82f6'],
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 3
+        },
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.25,
+            opacityTo: 0.0,
+            stops: [0, 90, 100]
+          }
+        },
+        grid: {
+          borderColor: '#1e293b',
+          strokeDashArray: 4,
+          xaxis: {
+            lines: {
+              show: false
+            }
+          },
+          yaxis: {
+            lines: {
+              show: true
+            }
+          }
+        },
+        xaxis: {
+          categories: months,
+          axisBorder: {
+            show: false
+          },
+          axisTicks: {
+            show: false
+          }
+        },
+        yaxis: {
+          title: {
+            text: '금액 (단위: 만원)',
+            style: {
+              fontWeight: 600
+            }
+          }
+        },
+        tooltip: {
+          theme: 'dark',
+          y: {
+            formatter: function (val) {
+              if (val === null) return '데이터 없음';
+              return (val * 10000).toLocaleString('ko-KR') + '원';
+            }
+          }
+        },
+        legend: {
+          position: 'top',
+          horizontalAlign: 'right',
+          markers: {
+            radius: 99
+          }
+        }
+      };
+
+      if (chartInstance) {
+        chartInstance.updateOptions(options);
+      } else {
+        chartInstance = new ApexCharts(document.querySelector("#compare-chart"), options);
+        chartInstance.render();
+      }
+    }
+
+    // Select Month and view detail
+    function selectMonth(monthStr) {
+      currentSelectedMonth = monthStr;
+      
+      // Update Month Selector dropdown if changed programmatically
+      const sel = document.getElementById('month-selector');
+      if (sel.value !== monthStr) {
+        sel.value = monthStr;
+      }
+      
+      const data = localData.find(d => d.month === monthStr);
+      if (!data) return;
+
+      document.getElementById('detail-sales-25').innerText = formatCurrency(data.sales2025);
+      document.getElementById('detail-expenses-25').innerText = formatCurrency(data.expenses2025);
+      document.getElementById('detail-profit-25').innerText = formatCurrency(data.profit2025);
+
+      if (data.sales2026 !== null) {
+        document.getElementById('detail-sales-26').innerText = formatCurrency(data.sales2026);
+        document.getElementById('detail-expenses-26').innerText = formatCurrency(data.expenses2026);
+        document.getElementById('detail-profit-26').innerText = formatCurrency(data.profit2026);
+        
+        // YoY Changes
+        const yoySales = ((data.sales2026 - data.sales2025) / data.sales2025) * 100;
+        const yoyProfit = ((data.profit2026 - data.profit2025) / data.profit2025) * 100;
+        
+        document.getElementById('yoy-sales-pct').innerText = formatPercentage(yoySales);
+        document.getElementById('yoy-profit-pct').innerText = formatPercentage(yoyProfit);
+        
+        // Set colors
+        document.getElementById('yoy-sales-pct').className = yoySales > 0 ? "text-emerald-400 font-black" : "text-rose-400 font-black";
+        document.getElementById('yoy-profit-pct').className = yoyProfit > 0 ? "text-emerald-400 font-black" : "text-rose-400 font-black";
+      } else {
+        document.getElementById('detail-sales-26').innerText = '-';
+        document.getElementById('detail-expenses-26').innerText = '-';
+        document.getElementById('detail-profit-26').innerText = '-';
+        document.getElementById('yoy-sales-pct').innerText = '-';
+        document.getElementById('yoy-profit-pct').innerText = '-';
+        document.getElementById('yoy-sales-pct').className = "text-slate-500 font-bold";
+        document.getElementById('yoy-profit-pct').className = "text-slate-500 font-bold";
+      }
+    }
+
+    // Render Data Table rows
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      
+      localData.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 border-b border-slate-900/60 transition-colors";
+        
+        // Month Column
+        const tdMonth = document.createElement('td');
+        tdMonth.className = "py-3.5 px-4 font-bold text-slate-300";
+        tdMonth.innerHTML = `${parseInt(d.month)}월` + (d.isEstimate2026 && d.sales2026 !== null ? ' <span class="text-[9px] px-1 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">보정됨</span>' : '');
+        tr.appendChild(tdMonth);
+
+        // Sales Columns
+        const tdSales25 = document.createElement('td');
+        tdSales25.className = "py-3.5 px-4 text-right text-slate-400";
+        tdSales25.innerText = formatCurrency(d.sales2025);
+        tr.appendChild(tdSales25);
+
+        const tdSales26 = document.createElement('td');
+        tdSales26.className = "py-3.5 px-4 text-right text-slate-200 font-semibold";
+        tdSales26.innerText = formatCurrency(d.sales2026);
+        tr.appendChild(tdSales26);
+
+        // Expenses Columns
+        const tdExpenses25 = document.createElement('td');
+        tdExpenses25.className = "py-3.5 px-4 text-right text-slate-400";
+        tdExpenses25.innerText = formatCurrency(d.expenses2025);
+        tr.appendChild(tdExpenses25);
+
+        const tdExpenses26 = document.createElement('td');
+        tdExpenses26.className = "py-3.5 px-4 text-right text-slate-200 font-semibold";
+        tdExpenses26.innerText = formatCurrency(d.expenses2026);
+        tr.appendChild(tdExpenses26);
+
+        // Profit Columns
+        const tdProfit25 = document.createElement('td');
+        tdProfit25.className = "py-3.5 px-4 text-right text-slate-400";
+        tdProfit25.innerText = formatCurrency(d.profit2025);
+        tr.appendChild(tdProfit25);
+
+        const tdProfit26 = document.createElement('td');
+        tdProfit26.className = "py-3.5 px-4 text-right font-bold " + (d.profit2026 > 0 ? "text-emerald-400" : "text-rose-400");
+        tdProfit26.innerText = formatCurrency(d.profit2026);
+        tr.appendChild(tdProfit26);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Dynamic AI business insights
+    function updateBusinessInsights() {
+      const validMonths26 = localData.filter(d => d.sales2026 !== null);
+      
+      const sumSales25 = validMonths26.reduce((sum, d) => sum + d.sales2025, 0);
+      const sumSales26 = validMonths26.reduce((sum, d) => sum + d.sales2026, 0);
+      
+      const sumExpenses25 = validMonths26.reduce((sum, d) => sum + d.expenses2025, 0);
+      const sumExpenses26 = validMonths26.reduce((sum, d) => sum + d.expenses2026, 0);
+      
+      const sumProfit25 = validMonths26.reduce((sum, d) => sum + d.profit2025, 0);
+      const sumProfit26 = validMonths26.reduce((sum, d) => sum + d.profit2026, 0);
+      
+      const salesPct = ((sumSales26 - sumSales25) / sumSales25) * 100;
+      const profitPct = ((sumProfit26 - sumProfit25) / sumProfit25) * 100;
+      const expPct = ((sumExpenses26 - sumExpenses25) / sumExpenses25) * 100;
+
+      let insight = "";
+      if (salesPct > 0) {
+        insight += `2026년 누적 매출액은 전년 동기 대비 <strong class="text-blue-400">${salesPct.toFixed(1)}% 상승</strong>하며 양호한 성장세를 보여주고 있습니다. `;
+      } else {
+        insight += `2026년 누적 매출액은 전년 동기 대비 <strong class="text-rose-400">${Math.abs(salesPct).toFixed(1)}% 감소</strong>했습니다. `;
+      }
+
+      if (profitPct > 0) {
+        insight += `특히, 경비 지출 상승률(<span class="text-red-400">${expPct.toFixed(1)}%</span>)을 매출 성장이 상쇄하여, 누적 순이익은 전년 동기 대비 <strong class="text-emerald-400">${profitPct.toFixed(1)}% 증가</strong>한 메리트 있는 운영 성과를 달성 중입니다. `;
+      } else {
+        insight += `동기간 경비 지출이 <span class="text-red-400">${expPct.toFixed(1)}% 증가</span>함에 따라, 누적 순이익은 전년 대비 <strong class="text-rose-400">${Math.abs(profitPct).toFixed(1)}% 감소</strong>한 양상을 보이고 있습니다. 고정비 최적화 점검이 필요합니다. `;
+      }
+      
+      // May 2026 estimate note
+      const simNode = localData.find(d => d.isEstimate2026 && d.defaultSimulation);
+      if (simNode) {
+        insight += `<br/><br/><span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="info" class="w-3.5 h-3.5 inline"></i> 현재 5월 데이터는 입력하신 보정 비용(임대료 ${document.getElementById('slider-rent-val').innerText}, 인건비 ${document.getElementById('slider-labor-val').innerText})을 실시간 반영하여 실적 예측을 진행하고 있습니다.</span>`;
+      }
+      
+      document.getElementById('ai-insight-text').innerHTML = insight;
+      lucide.createIcons();
+    }
+
+    // Export CSV Data
+    function exportCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "월,25년 매출,26년 매출,25년 경비,26년 경비,25년 순이익,26년 순이익\n";
+      
+      localData.forEach(d => {
+        const row = [
+          `${parseInt(d.month)}월`,
+          d.sales2025,
+          d.sales2026 || 0,
+          d.expenses2025,
+          d.expenses2026 || 0,
+          d.profit2025,
+          d.profit2026 || 0
+        ].join(",");
+        csvContent += row + "\n";
+      });
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "oozy_coffee_compare_report.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
