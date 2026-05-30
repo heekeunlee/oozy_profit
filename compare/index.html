@@ -385,21 +385,36 @@
       </div>
       
       <div class="overflow-x-auto scrollbar-hide">
-        <table class="w-full text-left text-xs border-collapse">
+        <table class="w-full text-left text-xs border-collapse min-w-[800px]">
           <thead>
-            <tr class="text-[10px] font-bold uppercase tracking-wider text-[#86868B] border-b border-[#E5E5EA]">
-              <th class="py-3 px-4">영업월</th>
-              <th class="py-3 px-4 text-right">25년 매출</th>
-              <th class="py-3 px-4 text-right text-[#007AFF]">26년 매출</th>
-              <th class="py-3 px-4 text-right">25년 경비</th>
-              <th class="py-3 px-4 text-right text-red-500">26년 경비</th>
-              <th class="py-3 px-4 text-right">25년 순이익</th>
-              <th class="py-3 px-4 text-right text-emerald-600">26년 순이익</th>
+            <!-- Group Header -->
+            <tr class="text-[10px] font-bold uppercase tracking-wider text-[#86868B] border-b border-[#E5E5EA]/60 bg-[#F5F5F7]/50">
+              <th class="py-2.5 px-3 border-r border-[#E5E5EA]/60" rowspan="2">영업월</th>
+              <th class="py-1.5 px-3 text-center border-r border-[#E5E5EA]/60 bg-[#007AFF]/5 text-[#007AFF]" colspan="3">매출액 (Sales)</th>
+              <th class="py-1.5 px-3 text-center border-r border-[#E5E5EA]/60 bg-rose-500/5 text-rose-600" colspan="3">제 경비 (Expenses)</th>
+              <th class="py-1.5 px-3 text-center bg-emerald-500/5 text-emerald-600" colspan="3">순이익 (Net Profit)</th>
+            </tr>
+            <!-- Sub Header -->
+            <tr class="text-[9px] font-bold uppercase tracking-wider text-[#86868B] border-b border-[#E5E5EA]">
+              <th class="py-2 px-3 text-right bg-[#007AFF]/2">25년</th>
+              <th class="py-2 px-3 text-right bg-[#007AFF]/2 text-[#007AFF]">26년</th>
+              <th class="py-2 px-3 text-center border-r border-[#E5E5EA]/60 bg-[#007AFF]/2">전년비 (YoY)</th>
+              
+              <th class="py-2 px-3 text-right bg-rose-500/2">25년</th>
+              <th class="py-2 px-3 text-right bg-rose-500/2 text-rose-600">26년</th>
+              <th class="py-2 px-3 text-center border-r border-[#E5E5EA]/60 bg-rose-500/2">전년비 (YoY)</th>
+              
+              <th class="py-2 px-3 text-right bg-emerald-500/2">25년</th>
+              <th class="py-2 px-3 text-right bg-emerald-500/2 text-emerald-600">26년</th>
+              <th class="py-2 px-3 text-center bg-emerald-500/2">전년비 (YoY)</th>
             </tr>
           </thead>
           <tbody id="table-body" class="divide-y divide-[#E5E5EA] font-medium text-[#1D1D1F]">
             <!-- Row generation via JS -->
           </tbody>
+          <tfoot id="table-footer" class="border-t-2 border-[#E5E5EA] bg-[#F5F5F7] font-bold text-[#1D1D1F]">
+            <!-- Total summary row via JS -->
+          </tfoot>
         </table>
       </div>
     </div>
@@ -767,6 +782,24 @@
       }
     }
 
+    function getYoYStyleAndText(val25, val26, isExpense = false) {
+      if (val26 === null || val26 === undefined || val25 === null || val25 === undefined || val25 === 0) {
+        return { text: '-', className: 'text-[#86868B]' };
+      }
+      const pct = ((val26 - val25) / val25) * 100;
+      const sign = pct > 0 ? '+' : '';
+      const text = `${sign}${pct.toFixed(1)}%`;
+      
+      let className = '';
+      if (pct === 0) {
+        className = 'text-[#86868B] font-semibold';
+      } else {
+        const isGood = !isExpense ? pct > 0 : pct < 0;
+        className = isGood ? 'text-emerald-600 font-bold bg-emerald-500/5' : 'text-rose-600 font-bold bg-rose-500/5';
+      }
+      return { text, className };
+    }
+
     // Render Data Table rows
     function renderTable() {
       const tbody = document.getElementById('table-body');
@@ -774,45 +807,153 @@
       
       localData.forEach(d => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-black/2 border-b border-[#E5E5EA] transition-colors";
+        tr.className = "hover:bg-[#F5F5F7]/80 border-b border-[#E5E5EA] transition-colors";
         
+        // Month
         const tdMonth = document.createElement('td');
-        tdMonth.className = "py-3.5 px-4 font-bold text-[#1D1D1F]";
-        tdMonth.innerHTML = `${parseInt(d.month)}월` + (d.isEstimate2026 && d.sales2026 !== null ? ' <span class="text-[9px] px-1 py-0.5 rounded bg-[#007AFF]/10 text-[#007AFF] border border-[#007AFF]/20">보정됨</span>' : '');
+        tdMonth.className = "py-3 px-3 font-bold text-[#1D1D1F] border-r border-[#E5E5EA]/60 text-center";
+        tdMonth.innerHTML = `${parseInt(d.month)}월` + (d.isEstimate2026 && d.sales2026 !== null ? '<br/><span class="text-[8px] px-1 py-0.2 rounded bg-[#007AFF]/10 text-[#007AFF] border border-[#007AFF]/20 font-normal">보정</span>' : '');
         tr.appendChild(tdMonth);
 
+        // Sales 25
         const tdSales25 = document.createElement('td');
-        tdSales25.className = "py-3.5 px-4 text-right text-[#86868B]";
+        tdSales25.className = "py-3 px-3 text-right text-[#86868B]";
         tdSales25.innerText = formatCurrency(d.sales2025);
         tr.appendChild(tdSales25);
 
+        // Sales 26
         const tdSales26 = document.createElement('td');
-        tdSales26.className = "py-3.5 px-4 text-right text-[#1D1D1F] font-semibold";
+        tdSales26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
         tdSales26.innerText = formatCurrency(d.sales2026);
         tr.appendChild(tdSales26);
 
+        // Sales YoY
+        const tdSalesYoY = document.createElement('td');
+        const salesYoY = getYoYStyleAndText(d.sales2025, d.sales2026, false);
+        tdSalesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + salesYoY.className;
+        tdSalesYoY.innerText = salesYoY.text;
+        tr.appendChild(tdSalesYoY);
+
+        // Expenses 25
         const tdExpenses25 = document.createElement('td');
-        tdExpenses25.className = "py-3.5 px-4 text-right text-[#86868B]";
+        tdExpenses25.className = "py-3 px-3 text-right text-[#86868B]";
         tdExpenses25.innerText = formatCurrency(d.expenses2025);
         tr.appendChild(tdExpenses25);
 
+        // Expenses 26
         const tdExpenses26 = document.createElement('td');
-        tdExpenses26.className = "py-3.5 px-4 text-right text-[#1D1D1F] font-semibold";
+        tdExpenses26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
         tdExpenses26.innerText = formatCurrency(d.expenses2026);
         tr.appendChild(tdExpenses26);
 
+        // Expenses YoY
+        const tdExpensesYoY = document.createElement('td');
+        const expensesYoY = getYoYStyleAndText(d.expenses2025, d.expenses2026, true);
+        tdExpensesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + expensesYoY.className;
+        tdExpensesYoY.innerText = expensesYoY.text;
+        tr.appendChild(tdExpensesYoY);
+
+        // Profit 25
         const tdProfit25 = document.createElement('td');
-        tdProfit25.className = "py-3.5 px-4 text-right text-[#86868B]";
+        tdProfit25.className = "py-3 px-3 text-right text-[#86868B]";
         tdProfit25.innerText = formatCurrency(d.profit2025);
         tr.appendChild(tdProfit25);
 
+        // Profit 26
         const tdProfit26 = document.createElement('td');
-        tdProfit26.className = "py-3.5 px-4 text-right font-bold " + (d.profit2026 > 0 ? "text-emerald-600" : "text-rose-600");
+        tdProfit26.className = "py-3 px-3 text-right text-[#1D1D1F] font-semibold";
         tdProfit26.innerText = formatCurrency(d.profit2026);
         tr.appendChild(tdProfit26);
 
+        // Profit YoY
+        const tdProfitYoY = document.createElement('td');
+        const profitYoY = getYoYStyleAndText(d.profit2025, d.profit2026, false);
+        tdProfitYoY.className = "py-3 px-3 text-center " + profitYoY.className;
+        tdProfitYoY.innerText = profitYoY.text;
+        tr.appendChild(tdProfitYoY);
+
         tbody.appendChild(tr);
       });
+
+      // Update Table Footer (YTD Summary)
+      const tfoot = document.getElementById('table-footer');
+      tfoot.innerHTML = '';
+
+      const validMonths26 = localData.filter(d => d.sales2026 !== null);
+      const totalSales25 = validMonths26.reduce((sum, d) => sum + d.sales2025, 0);
+      const totalSales26 = validMonths26.reduce((sum, d) => sum + d.sales2026, 0);
+      const totalExpenses25 = validMonths26.reduce((sum, d) => sum + d.expenses2025, 0);
+      const totalExpenses26 = validMonths26.reduce((sum, d) => sum + d.expenses2026, 0);
+      const totalProfit25 = validMonths26.reduce((sum, d) => sum + d.profit2025, 0);
+      const totalProfit26 = validMonths26.reduce((sum, d) => sum + d.profit2026, 0);
+
+      const footTr = document.createElement('tr');
+      footTr.className = "bg-[#F5F5F7]/95 hover:bg-[#F5F5F7] transition-colors border-t-2 border-[#E5E5EA]";
+
+      // Month col
+      const tfMonth = document.createElement('td');
+      tfMonth.className = "py-3 px-3 font-extrabold text-[#1D1D1F] border-r border-[#E5E5EA]/60 text-center";
+      tfMonth.innerHTML = '누적 (YTD)<br/><span class="text-[8px] font-normal text-[#86868B] block mt-0.5">1~5월 누계</span>';
+      footTr.appendChild(tfMonth);
+
+      // Sales 25 total
+      const tfSales25 = document.createElement('td');
+      tfSales25.className = "py-3 px-3 text-right text-[#86868B] font-bold";
+      tfSales25.innerText = formatCurrency(totalSales25);
+      footTr.appendChild(tfSales25);
+
+      // Sales 26 total
+      const tfSales26 = document.createElement('td');
+      tfSales26.className = "py-3 px-3 text-right text-[#007AFF] font-extrabold";
+      tfSales26.innerText = formatCurrency(totalSales26);
+      footTr.appendChild(tfSales26);
+
+      // Sales YoY total
+      const tfSalesYoY = document.createElement('td');
+      const salesYoY = getYoYStyleAndText(totalSales25, totalSales26, false);
+      tfSalesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + salesYoY.className;
+      tfSalesYoY.innerText = salesYoY.text;
+      footTr.appendChild(tfSalesYoY);
+
+      // Expenses 25 total
+      const tfExpenses25 = document.createElement('td');
+      tfExpenses25.className = "py-3 px-3 text-right text-[#86868B] font-bold";
+      tfExpenses25.innerText = formatCurrency(totalExpenses25);
+      footTr.appendChild(tfExpenses25);
+
+      // Expenses 26 total
+      const tfExpenses26 = document.createElement('td');
+      tfExpenses26.className = "py-3 px-3 text-right text-rose-600 font-extrabold";
+      tfExpenses26.innerText = formatCurrency(totalExpenses26);
+      footTr.appendChild(tfExpenses26);
+
+      // Expenses YoY total
+      const tfExpensesYoY = document.createElement('td');
+      const expensesYoY = getYoYStyleAndText(totalExpenses25, totalExpenses26, true);
+      tfExpensesYoY.className = "py-3 px-3 text-center border-r border-[#E5E5EA]/60 " + expensesYoY.className;
+      tfExpensesYoY.innerText = expensesYoY.text;
+      footTr.appendChild(tfExpensesYoY);
+
+      // Profit 25 total
+      const tfProfit25 = document.createElement('td');
+      tfProfit25.className = "py-3 px-3 text-right text-[#86868B] font-bold";
+      tfProfit25.innerText = formatCurrency(totalProfit25);
+      footTr.appendChild(tfProfit25);
+
+      // Profit 26 total
+      const tfProfit26 = document.createElement('td');
+      tfProfit26.className = "py-3 px-3 text-right text-emerald-600 font-extrabold";
+      tfProfit26.innerText = formatCurrency(totalProfit26);
+      footTr.appendChild(tfProfit26);
+
+      // Profit YoY total
+      const tfProfitYoY = document.createElement('td');
+      const profitYoY = getYoYStyleAndText(totalProfit25, totalProfit26, false);
+      tfProfitYoY.className = "py-3 px-3 text-center " + profitYoY.className;
+      tfProfitYoY.innerText = profitYoY.text;
+      footTr.appendChild(tfProfitYoY);
+
+      tfoot.appendChild(footTr);
     }
 
     // Dynamic AI business insights
